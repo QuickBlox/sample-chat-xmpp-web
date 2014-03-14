@@ -1,0 +1,6 @@
+# IDE meta files
+.project
+.settings
+
+# Temporary editors files
+*~
