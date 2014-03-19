@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>QB Web Chat sample</title>
+	
+	<style>
+		.hidden {
+			display: none;
+		}
+		#chat {
+			width: 320px;
+			height: 300px;
+			border: 1px solid #ccc;
+			padding: 10px;
+			margin-bottom: 10px;
+			overflow: auto;
+		}
+			#chat h3 {
+				margin: 0 0 10px;
+			}
+			#chat .msg {
+				padding-bottom: 5px;
+				border-bottom: 1px solid #000;
+			}
+	</style>
+</head>
+<body>
+	<input class="show" type="text" placeholder="Login" id="login">
+	<input class="show" type="text" placeholder="Password" id="password">
+	<button class="show" onclick="login()">Connect</button>
+	
+	<div class="hidden" id="chat">
+		<h3>Chat box</h3>
+	</div>
+	<textarea class="hidden" name="message" id="message" cols="40" rows="3" placeholder="Enter your message here.." autofocus></textarea><br>
+	<button class="hidden" onclick="send()">Send message</button>
+	<button class="hidden" onclick="logout()">Disconnect</button>
+	
+	<script src="lib/jquery-2.1.0.min.js"></script>
+	<script src="lib/quickblox.js"></script>
+	<script src="lib/strophe.min.js"></script>
+	<script src="lib/strophe.muc.js"></script>
+	<script src="lib/strophe.chatstates.js"></script>
+	<script src="quickblox.chat.js"></script>
+	<script src="main.js"></script>
+</body>
+</html>
