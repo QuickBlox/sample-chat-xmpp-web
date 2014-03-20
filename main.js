@@ -1,8 +1,3 @@
-var QBAPP = {
-	appID: 6566,
-	authKey: 'pm6CarZjJQC9c3b',
-	authSecret: 'pFPBSJD8t2xY5Br'
-};
 var chat, opponent;
 
 $(document).ready(function() {

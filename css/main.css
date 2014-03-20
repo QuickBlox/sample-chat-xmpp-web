@@ -1,0 +1,43 @@
+@import url(reset.css);
+
+/* Global
+----------------------------------------------------------*/
+html {
+	height: 100%;
+}
+body {
+	width: 100%;
+	height: 100%;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+a {
+	color: #0077cb;
+}
+a:hover {
+	text-decoration: none;
+}
+.hidden {
+	display: none;
+}
+
+#wrap {
+	
+}
+
+/* Chat module
+----------------------------------------------------------*/
+#chat {
+	width: 320px;
+	height: 300px;
+	border: 1px solid #ccc;
+	padding: 10px;
+	margin-bottom: 10px;
+	overflow: auto;
+}
+	#chat h3 {
+		margin: 0 0 10px;
+	}
+	#chat .msg {
+		padding-bottom: 5px;
+		border-bottom: 1px solid #000;
+	}

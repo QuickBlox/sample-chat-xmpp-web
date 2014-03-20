@@ -1,29 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
+	<meta charset="utf-8">
 	<title>QB Web Chat sample</title>
-	
-	<style>
-		.hidden {
-			display: none;
-		}
-		#chat {
-			width: 320px;
-			height: 300px;
-			border: 1px solid #ccc;
-			padding: 10px;
-			margin-bottom: 10px;
-			overflow: auto;
-		}
-			#chat h3 {
-				margin: 0 0 10px;
-			}
-			#chat .msg {
-				padding-bottom: 5px;
-				border-bottom: 1px solid #000;
-			}
-	</style>
+	<link rel="stylesheet" href="css/main.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 </head>
 <body>
 	<input class="show" type="text" placeholder="Login" id="login">
@@ -37,12 +18,13 @@
 	<button class="hidden" onclick="send()">Send message</button>
 	<button class="hidden" onclick="logout()">Disconnect</button>
 	
-	<script src="lib/jquery-2.1.0.min.js"></script>
-	<script src="lib/quickblox.js"></script>
-	<script src="lib/strophe.min.js"></script>
-	<script src="lib/strophe.muc.js"></script>
-	<script src="lib/strophe.chatstates.js"></script>
-	<script src="quickblox.chat.js"></script>
+	<script src="libs/strophe.js"></script>
+	<script src="libs/strophe.muc.js"></script>
+	<script src="libs/strophe.chatstates.js"></script>
+	<script src="libs/quickblox.js"></script>
+	<script src="libs/quickblox.chat.js"></script>
+	
+	<script src="config.js"></script>
 	<script src="main.js"></script>
 </body>
 </html>
