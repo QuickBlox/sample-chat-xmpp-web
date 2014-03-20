@@ -3,20 +3,44 @@
 <head>
 	<meta charset="utf-8">
 	<title>QB Web Chat sample</title>
+	
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/main.css">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 </head>
 <body>
-	<input class="show" type="text" placeholder="Login" id="login">
-	<input class="show" type="text" placeholder="Password" id="password">
-	<button class="show" onclick="login()">Connect</button>
-	
-	<div class="hidden" id="chat">
-		<h3>Chat box</h3>
+	<div class="modal fade" id="loginForm" role="dialog" aria-labelledby="loginForm" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">Welcome to QB Web Chat sample</h4>
+				</div>
+				<div class="modal-body">
+					<form role="form" action="#">
+						<div class="form-group">
+							<input type="text" class="form-control" id="nickname" placeholder="Enter nickname" autofocus>
+						</div>
+						<button type="submit" class="btn btn-primary btn-block" id="loginSubmit">Connect</button>
+					</form>
+					
+					<div class="progress progress-striped active hidden">
+						<div class="progress-bar" role="progressbar"></div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
-	<textarea class="hidden" name="message" id="message" cols="40" rows="3" placeholder="Enter your message here.." autofocus></textarea><br>
-	<button class="hidden" onclick="send()">Send message</button>
-	<button class="hidden" onclick="logout()">Disconnect</button>
+	
+	<div id="wrap" class="hidden">
+		<div id="chat">
+			<h3>Chat box</h3>
+			<textarea name="message" id="message" cols="40" rows="3" placeholder="Enter your message here.." autofocus></textarea><br>
+			<button onclick="sendMessage()">Send message</button>
+			<button onclick="logout()">Disconnect</button>
+		</div>
+	</div>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 	
 	<script src="libs/strophe.js"></script>
 	<script src="libs/strophe.muc.js"></script>

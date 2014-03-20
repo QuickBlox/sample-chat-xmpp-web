@@ -1,27 +1,37 @@
-@import url(reset.css);
-
 /* Global
 ----------------------------------------------------------*/
-html {
-	height: 100%;
-}
+html,
 body {
-	width: 100%;
 	height: 100%;
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-a {
-	color: #0077cb;
-}
-a:hover {
-	text-decoration: none;
-}
-.hidden {
-	display: none;
 }
 
+/* Popup
+----------------------------------------------------------*/
+.modal-dialog {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 310px;
+	height: 181px;
+	margin: auto;
+}
+	.modal-dialog .progress {
+		width: 80%;
+		margin: 0 auto;
+	}
+		.modal-dialog .progress-bar {
+			width: 100%;
+		}
+
+/* Wrapper
+----------------------------------------------------------*/
 #wrap {
-	
+	width: 980px;
+	height: 100%;
+	margin: 0 auto;
+	background: #ececec;
 }
 
 /* Chat module
