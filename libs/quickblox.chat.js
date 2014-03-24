@@ -17,7 +17,10 @@ function QBChat(userID, userPass, logs) {
 	this.onConnectFailed = null;
 	this.onConnectSuccess = null;
 	this.onConnectClosed = null;
-	this.onMessageReceived = null;
+	
+	this.onChatRoster = null;
+	this.onChatPresence = null;
+	this.onChatMessage = null;
 	
 	this.getJID = function(id) {
 		return id + "-" + QB.session.application_id + "@" + QBCHAT_CONFIG.server;
@@ -32,16 +35,28 @@ function QBChat(userID, userPass, logs) {
 		this.connection.rawOutput = function(data) {console.log('SENT: ' + data)};
 	}
 	
-	this.onMessage = function(msg) {
+	this.onMessage = function(stanza, room) {
 		traceC('Message');
 		var author, message;
 		
-		author = $(msg).attr('from');
-		message = $(msg).find('body').context.textContent;
+		author = $(stanza).attr('from');
+		message = $(stanza).find('body').context.textContent;
 		
-		_this.onMessageReceived(author, message);
-		
+		_this.onChatMessage(author, message);
 		return true;
+	};
+	
+	this.muc = {
+		onRoster: function(users, room) {
+			_this.onChatRoster(users, room);
+			return true;
+		},
+	
+		onPresence: function(stanza, room) {
+			traceC('Presence');
+			_this.onChatPresence(stanza, room);
+			return true;
+		}
 	};
 }
 
@@ -91,19 +106,20 @@ QBChat.prototype.send = function(jid, msg) {
 		to: jid,
 		from: this.jid,
 		type: 'chat'
-	}
+	};
 	
 	msg = $msg(params).c('body').t(msg);
 	this.connection.send(msg);
 };
 
-/*QBChat.prototype.disconnect = function() {
+QBChat.prototype.disconnect = function() {
 	this.connection.flush();
 	this.connection.disconnect();
-};*/
-	
-//connection.muc.join(CHAT.roomJID, chatUser.qbID, getMessage, getPresence, getRoster);
+};
 
+QBChat.prototype.join = function(roomJid, nick) {
+	this.connection.muc.join(roomJid, nick, this.onMessage, this.muc.onPresence, this.muc.onRoster);
+};
 
 function traceC(text) {
 	console.log("[qb_chat]: " + text);

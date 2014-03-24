@@ -14,6 +14,11 @@ $(document).ready(function() {
 	});
 	
 	$('#loginSubmit').click(login);
+	$('#chats-wrap').on('keydown', '.sendMessage', sendMessage);
+	
+	window.onresize = function() {
+		$('.panel-body').height(this.innerHeight - 80);
+	}
 });
 
 function login(event) {
@@ -28,7 +33,7 @@ function login(event) {
 		alert('Nickname is required');
 	} else {
 		$('#loginForm form').hide();
-		$('#loginForm .progress').removeClass('hidden');
+		$('#loginForm .progress').show();
 		
 		QB.users.create(params, function(err, result) {
 			if (err) {
@@ -44,11 +49,13 @@ function login(event) {
 }
 
 function connectChat() {
-	chatService = new QBChat(chatUser.id, chatUser.pass);
+	chatService = new QBChat(chatUser.id, chatUser.pass, {debug: false});
 	chatService.onConnectFailed = onConnectFailed;
 	chatService.onConnectSuccess = onConnectSuccess;
 	chatService.onConnectClosed = onConnectClosed;
-	chatService.onMessageReceived = onMessageReceived;
+	chatService.onChatMessage = onChatMessage;
+	chatService.onChatRoster = onChatRoster;
+	chatService.onChatPresence = onChatPresence;
 	
 	chatService.connect();
 }
@@ -68,13 +75,24 @@ function logout() {
 /* callbacks
 -------------------------------------------*/
 function onConnectFailed() {
-	$('#loginForm .progress').addClass('hidden');
+	$('#loginForm .progress').hide();
 	$('#loginForm form').show();
 }
 
 function onConnectSuccess() {
-	$('.hidden').removeClass('hidden');
+	$('.panel-body').height(window.innerHeight - 80);
 	$('#loginForm').modal('hide');
+	$('#wrap').show();
+	
+	chatService.join(QBAPP.publicRoom, chatUser.login);
+	
+	QB.createSession({login: chatUser.login, password: chatUser.pass}, function(err, result) {
+		if (err) {
+			console.log(err.detail);
+		} else {
+			//console.log(result);
+		}
+	});
 }
 
 function onConnectClosed() {
@@ -82,7 +100,20 @@ function onConnectClosed() {
 	$('.hidden').hide();
 }
 
-function onMessageReceived(author, message) {
+function onChatRoster(users, room) {
+	//console.log(users);
+	var occupants = Object.keys(users);
+	$('.users .list-group').html('');
+	$(occupants).each(function() {
+		$('.users .list-group').append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
+	});
+}
+
+function onChatPresence(author, message) {
+	//console.log(author);
+}
+
+function onChatMessage(author, message) {
 	var html = '<div class="msg"><b>' + author + ': </b>';
 	html += '<span>' + message + '</span></div>';
 	$('#chat').append(html);

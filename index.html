@@ -22,7 +22,7 @@
 						<button type="submit" class="btn btn-primary btn-block" id="loginSubmit">Connect</button>
 					</form>
 					
-					<div class="progress progress-striped active hidden">
+					<div class="progress progress-striped active">
 						<div class="progress-bar" role="progressbar"></div>
 					</div>
 				</div>
@@ -30,12 +30,60 @@
 		</div>
 	</div>
 	
-	<div id="wrap" class="hidden">
-		<div id="chat">
-			<h3>Chat box</h3>
-			<textarea name="message" id="message" cols="40" rows="3" placeholder="Enter your message here.." autofocus></textarea><br>
-			<button onclick="sendMessage()">Send message</button>
-			<button onclick="logout()">Disconnect</button>
+	<div id="wrap">
+		<div class="panel panel-primary panel-chat">
+		  <div class="panel-heading">
+		    <h3 class="panel-title">Public Room</h3>
+		    <span class="glyphicon glyphicon-log-out" id="logout"></span>
+		  </div>
+		  <div class="panel-body">
+		  	<div class="chats">
+				<div class="list-group">
+				  <a href="#" class="list-group-item selected"><img src="images/glyphicons_244_conversation.png" class="groupchat-icon" alt="icon"> Public Room</a>
+				  <a href="#" class="list-group-item">Cras justo odio</a>
+				</div>
+		    </div>
+		  	<div class="users">
+		    	<div class="list-group">
+				</div>
+		    </div>
+		  	<div class="chat">
+		  		<div class="chat-conetent">
+		  			<div class="message-wrap">
+		  				<section class="message white">
+		  					<header>
+								<b>@name</b>
+								<time datetime="">121212</time>
+							</header>
+							<div class="message-description">dfgdfgdfgdfg</div>
+						</section>
+						<section class="message">
+		  					<header>
+								<b>@name</b>
+								<time datetime="">121212</time>
+							</header>
+							<div class="message-description">dfgdfgdfgdfg</div>
+						</section>
+						<section class="message white">
+		  					<header>
+								<b>@name</b>
+								<time datetime="">121212</time>
+							</header>
+							<div class="message-description">dfgdfgdfgdfg</div>
+						</section>
+		  			</div>
+		  		</div>
+		  		<div class="controls">
+		  			<form class="form-inline" role="form" actions="#">
+					  <div class="form-group">
+					    <input class="form-control" id="message" placeholder="Enter your message here..">
+					  </div>
+					  <button type="submit" class="btn btn-primary" id="sendMessage">Send</button>
+					</form>
+		  		</div>
+		  	</div>
+		    
+		  </div>
 		</div>
 	</div>
 	
