@@ -135,6 +135,10 @@ QBChat.prototype.join = function(roomJid, nick) {
 	this.connection.muc.join(roomJid, nick, this.onMessage, this.muc.onPresence, this.muc.onRoster);
 };
 
+QBChat.prototype.leave = function(roomJid, nick) {
+	this.connection.muc.leave(roomJid, nick);
+};
+
 function traceC(text) {
 	console.log("[qb_chat]: " + text);
 }

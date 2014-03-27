@@ -17,12 +17,26 @@ $(document).ready(function() {
 	updateTime();
 	
 	$('#loginSubmit').click(login);
+	$('#logout').click(logout);
 	$('.panel-chat').on('keydown', '.sendMessage', sendMessage);
 	$('.panel-chat').on('click', '.btn-sendMessage', sendMessage);
 	
 	window.onresize = function() {
 		$('.panel-body').height(this.innerHeight - 90);
-	}
+	};
+	
+	window.onbeforeunload = function() {
+		if (chatService) {
+    		$.ajax({
+    			async: false,
+	            url:  QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
+	            type: 'DELETE',
+	            beforeSend: function(jqXHR, settings) {
+		          jqXHR.setRequestHeader('QB-Token', QB.session.token);
+		        }
+		    });
+		 }
+	};
 });
 
 function login(event) {
@@ -94,10 +108,8 @@ function sendMessage(event) {
 }
 
 function logout() {
-	//chatService.disconnect();
-	chatService.connection.sync = true;
-	chatService.connection.flush();
-	chatService.connection.disconnect();
+	chatService.leave(QBAPP.publicRoom, chatUser.login);
+	chatService.disconnect();
 }
 
 /* callbacks
@@ -118,8 +130,21 @@ function onConnectSuccess() {
 }
 
 function onConnectClosed() {
-	$('.show').show();
-	$('.hidden').hide();
+	$('#wrap').hide();
+	$('#loginForm .progress').hide();
+	$('#loginForm form').show();
+	$('#nickname').val('');
+	$('.message-wrap').html('<img src="images/loading.gif" alt="loading" class="loading">');
+	$('#loginForm').modal('show');
+	
+	QB.users.delete(chatUser.id, function(err, result) {
+		if (err) {
+			console.log(err.detail);
+		} else {
+			chatService = null;
+			chatUser = null;
+		}
+	});
 }
 
 function onChatRoster(users, room) {
@@ -139,9 +164,6 @@ function onChatPresence(author, type, time) {
 	}
 	$('.chat .service-message:last').fadeTo(500, 1);
 	$('.chat .message-wrap').scrollTo('*:last', 0);
-	
-	/*if (type && qbID == chatUser.qbID && !switches.isLogout)
-		window.location.reload();*/
 }
 
 function onChatMessage(author, message, createTime) {
