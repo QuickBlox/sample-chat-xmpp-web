@@ -28,6 +28,9 @@ function QBChat(userID, userPass, logs) {
 	this.getIDFromResource = function(jid) {
 		return Strophe.unescapeNode(Strophe.getResourceFromJid(jid));
 	}
+	this.getIDFromNode = function(jid) {
+		return Strophe.getNodeFromJid(jid).split('-')[0];
+	}
 	
 	this.jid = this.getJID(userID);
 	this.pass = userPass;
@@ -58,7 +61,14 @@ function QBChat(userID, userPass, logs) {
 	
 		onPresence: function(stanza, room) {
 			traceC('Presence');
-			_this.onChatPresence(stanza, room);
+			var user, type, time, author;
+			
+			user = $(stanza).attr('from');
+			type = $(stanza).attr('type');
+			time = new Date().toISOString();
+			author = _this.getIDFromResource(user);
+			
+			_this.onChatPresence(author, type, time);
 			return true;
 		}
 	};
