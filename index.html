@@ -40,7 +40,6 @@
 		  	<div class="chats">
 				<div class="list-group">
 				  <a href="#" class="list-group-item selected"><img src="images/glyphicons_244_conversation.png" class="groupchat-icon" alt="icon"> Public Room</a>
-				  <a href="#" class="list-group-item">Cras justo odio</a>
 				</div>
 		    </div>
 		  	<div class="users">
@@ -50,35 +49,15 @@
 		  	<div class="chat">
 		  		<div class="chat-conetent">
 		  			<div class="message-wrap">
-		  				<section class="message white">
-		  					<header>
-								<b>@name</b>
-								<time datetime="">121212</time>
-							</header>
-							<div class="message-description">dfgdfgdfgdfg</div>
-						</section>
-						<section class="message">
-		  					<header>
-								<b>@name</b>
-								<time datetime="">121212</time>
-							</header>
-							<div class="message-description">dfgdfgdfgdfg</div>
-						</section>
-						<section class="message white">
-		  					<header>
-								<b>@name</b>
-								<time datetime="">121212</time>
-							</header>
-							<div class="message-description">dfgdfgdfgdfg</div>
-						</section>
+		  				<img src="images/loading.gif" alt="loading" class="loading">
 		  			</div>
 		  		</div>
 		  		<div class="controls">
 		  			<form class="form-inline" role="form" actions="#">
 					  <div class="form-group">
-					    <input class="form-control" id="message" placeholder="Enter your message here..">
+					    <input class="form-control sendMessage" placeholder="Enter your message here..">
 					  </div>
-					  <button type="submit" class="btn btn-primary" id="sendMessage">Send</button>
+					  <button type="submit" class="btn btn-primary btn-sendMessage">Send</button>
 					</form>
 		  		</div>
 		  	</div>
@@ -95,6 +74,8 @@
 	<script src="libs/strophe.chatstates.js"></script>
 	<script src="libs/quickblox.js"></script>
 	<script src="libs/quickblox.chat.js"></script>
+	<script src="libs/jquery.timeago.js"></script>
+	<script src="libs/jquery.scrollTo-min.js"></script>
 	
 	<script src="config.js"></script>
 	<script src="main.js"></script>

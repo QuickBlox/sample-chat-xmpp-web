@@ -13,11 +13,14 @@ $(document).ready(function() {
 		}
 	});
 	
+	updateTime();
+	
 	$('#loginSubmit').click(login);
-	$('#chats-wrap').on('keydown', '.sendMessage', sendMessage);
+	$('.panel-chat').on('keydown', '.sendMessage', sendMessage);
+	$('.panel-chat').on('click', '.btn-sendMessage', sendMessage);
 	
 	window.onresize = function() {
-		$('.panel-body').height(this.innerHeight - 80);
+		$('.panel-body').height(this.innerHeight - 90);
 	}
 });
 
@@ -42,7 +45,16 @@ function login(event) {
 			} else {
 				chatUser = result;
 				chatUser.pass = params.password;
-				connectChat();
+				
+				QB.createSession({login: chatUser.login, password: chatUser.pass}, function(err, result) {
+					if (err) {
+						onConnectFailed();
+						alert(err.detail);
+					} else {
+						//console.log(result);
+						connectChat();
+					}
+				});
 			}
 		});
 	}
@@ -60,9 +72,25 @@ function connectChat() {
 	chatService.connect();
 }
 
-function sendMessage() {
-	var msg = $('#message').val();
-	chatService.send(opponent, msg);
+function sendMessage(event) {
+	var msg;
+	
+	if (event.type == 'keydown' && event.keyCode == 13 && !event.shiftKey) {
+		msg = $(this).val();
+		send();
+		return false;
+	} else if (event.type == 'click') {
+		event.preventDefault();
+		msg = $('.sendMessage').val();
+		send();
+	}
+	
+	function send() {
+		if (trim(msg)) {
+			chatService.send(QBAPP.publicRoom, msg, 'groupchat');
+			$('.sendMessage').val('');
+		}
+	}
 }
 
 function logout() {
@@ -80,19 +108,12 @@ function onConnectFailed() {
 }
 
 function onConnectSuccess() {
-	$('.panel-body').height(window.innerHeight - 80);
+	$('.panel-body').height(window.innerHeight - 90);
 	$('#loginForm').modal('hide');
 	$('#wrap').show();
 	
 	chatService.join(QBAPP.publicRoom, chatUser.login);
-	
-	QB.createSession({login: chatUser.login, password: chatUser.pass}, function(err, result) {
-		if (err) {
-			console.log(err.detail);
-		} else {
-			//console.log(result);
-		}
-	});
+	setTimeout(function() {$('.loading').remove()}, 2 * 1000);
 }
 
 function onConnectClosed() {
@@ -113,10 +134,17 @@ function onChatPresence(author, message) {
 	//console.log(author);
 }
 
-function onChatMessage(author, message) {
-	var html = '<div class="msg"><b>' + author + ': </b>';
-	html += '<span>' + message + '</span></div>';
-	$('#chat').append(html);
+function onChatMessage(author, message, createTime) {
+	var html = '<section class="message white">';
+	html += '<header><b>@' + chatService.getIDFromResource(author) + '</b> ';
+	html += '<time datetime="' + createTime + '">' + $.timeago(createTime) + '</time>';
+	html += '</header><div class="message-description">' + message + '</div></section>';
+	
+	$('.loading').remove();
+	$('.chat .message-wrap').append(html);
+	$('.chat .message').removeClass('white');
+	$('.chat .message:even').addClass('white');
+	$('.chat .message-wrap').scrollTo('*:last', 0);
 }
 
 /* helper functions
@@ -127,4 +155,9 @@ function trim(str) {
 	if (str.charAt(str.length-1) == ' ')
 		str = trim(str.substring(0, str.length-1));
 	return str;
+}
+
+function updateTime() {
+	$('.message time').timeago().removeAttr('title');
+	setTimeout(updateTime, 60 * 1000);
 }

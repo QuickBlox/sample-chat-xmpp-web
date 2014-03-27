@@ -25,6 +25,9 @@ function QBChat(userID, userPass, logs) {
 	this.getJID = function(id) {
 		return id + "-" + QB.session.application_id + "@" + QBCHAT_CONFIG.server;
 	};
+	this.getIDFromResource = function(jid) {
+		return Strophe.unescapeNode(Strophe.getResourceFromJid(jid));
+	}
 	
 	this.jid = this.getJID(userID);
 	this.pass = userPass;
@@ -37,12 +40,13 @@ function QBChat(userID, userPass, logs) {
 	
 	this.onMessage = function(stanza, room) {
 		traceC('Message');
-		var author, message;
+		var author, message, createTime;
 		
 		author = $(stanza).attr('from');
 		message = $(stanza).find('body').context.textContent;
+		createTime = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
 		
-		_this.onChatMessage(author, message);
+		_this.onChatMessage(author, message, createTime);
 		return true;
 	};
 	
@@ -101,11 +105,11 @@ QBChat.prototype.connect = function() {
 	});
 };
 
-QBChat.prototype.send = function(jid, msg) {
+QBChat.prototype.send = function(jid, msg, type) {
 	var params = {
 		to: jid,
-		from: this.jid,
-		type: 'chat'
+		from: this.connection.jid,
+		type: type
 	};
 	
 	msg = $msg(params).c('body').t(msg);
