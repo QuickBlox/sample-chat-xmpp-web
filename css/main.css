@@ -5,9 +5,9 @@ body {
 	height: 100%;
 }
 
-/* Popup
+/* Login Form
 ----------------------------------------------------------*/
-.modal-dialog {
+#loginForm .modal-dialog {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -17,16 +17,16 @@ body {
 	height: 181px;
 	margin: auto;
 }
-	.modal-dialog .progress {
+	#loginForm .progress {
 		display: none;
 		width: 80%;
 		margin: 0 auto;
 	}
-		.modal-dialog .progress-bar {
+		#loginForm .progress-bar {
 			width: 100%;
 		}
 
-/* Wrapper
+/* Wrapper panel
 ----------------------------------------------------------*/
 #wrap {
 	display: none;
@@ -37,40 +37,33 @@ body {
 	margin: 0 auto;
 	padding: 20px 0 30px;
 }
-	.panel-chat {
-		height: 100%;
+	#wrap .panel-heading {
+		position: relative;
+		text-align: center;
 	}
-		.panel-chat .panel-heading {
-			position: relative;
-			text-align: center;
+		#wrap .panel-heading .btn {
+			position: absolute;
+			top: 0;
+			font-size: 18px;
+			background: none;
 		}
-			.panel-chat #addNewRoom {
-				position: absolute;
-				top: 0;
-				left: 0;
-				padding: 10px;
-				font-size: 18px;
-				cursor: pointer;
-			}
-			.panel-chat #logout {
-				position: absolute;
-				top: 0;
-				right: 0;
-				padding: 10px;
-				font-size: 18px;
-				cursor: pointer;
-			}
-			.panel-chat #addNewRoom:hover,
-			.panel-chat #logout:hover {
-				opacity: 0.6;
-			}
-		.panel-chat .panel-body {
-			padding: 0;
+		#wrap .panel-heading .btn:hover {
+			color: #fff;
+			opacity: 0.7;
 		}
+		#wrap .panel-heading #addRoom {
+			left: 0;
+		}
+		#wrap .panel-heading #logout {
+			right: 0;
+		}
+	#wrap .panel-body {
+		padding: 0;
+	}
 
 /* Chat module
 ----------------------------------------------------------*/
-.chats {
+.chat-list {
 	float: left;
 	width: 200px;
 	height: 100%;
@@ -95,7 +88,7 @@ body {
 		.chat .form-group input {
 			width: 100%;
 		}
-	.chat .btn-sendMessage {
+	.chat .sendMessage {
 		margin-left: -60px;
 	}
 .chat-conetent {

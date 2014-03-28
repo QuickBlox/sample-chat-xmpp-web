@@ -1,48 +1,40 @@
 /**
  * QuickBlox Chat library
- * version 0.2.0
+ * version 0.3.0
  *
  * Author: Andrey Povelichenko (andrey.povelichenko@quickblox.com)
  *
  */
 
-var QBCHAT_CONFIG = {
-	server: 'chat.quickblox.com',
-	bosh: 'http://chat.quickblox.com:5280'
-};
-
-function QBChat(userID, userPass, logs) {
+function QBChat(params) {
 	var _this = this;
 	
-	this.onConnectFailed = null;
-	this.onConnectSuccess = null;
-	this.onConnectClosed = null;
-	
-	this.onChatRoster = null;
-	this.onChatPresence = null;
-	this.onChatMessage = null;
-	
-	this.getJID = function(id) {
-		return id + "-" + QB.session.application_id + "@" + QBCHAT_CONFIG.server;
+	this.config = {
+		server: 'chat.quickblox.com',
+		bosh: 'http://chat.quickblox.com:5280'
 	};
-	this.getIDFromResource = function(jid) {
-		return Strophe.unescapeNode(Strophe.getResourceFromJid(jid));
-	}
-	this.getIDFromNode = function(jid) {
-		return Strophe.getNodeFromJid(jid).split('-')[0];
-	}
 	
-	this.jid = this.getJID(userID);
-	this.pass = userPass;
+	// create Strophe Connection object
+	this.connection = new Strophe.Connection(_this.config.bosh);
 	
-	this.connection = new Strophe.Connection(QBCHAT_CONFIG.bosh);
-	if (logs && logs.debug) {
-		this.connection.rawInput = function(data) {console.log('RECV: ' + data)};
-		this.connection.rawOutput = function(data) {console.log('SENT: ' + data)};
+	// set user callbacks
+	if (params) {
+		this.onConnectFailed = params.onConnectFailed || null;
+		this.onConnectSuccess = params.onConnectSuccess || null;
+		this.onConnectClosed = params.onConnectClosed || null;
+		this.onChatMessage = params.onChatMessage || null;
+		this.onMUCPresence = params.onMUCPresence || null;
+		this.onMUCRoster = params.onMUCRoster || null;
+		
+		// logs
+		if (params.debug) {
+			this.connection.rawInput = function(data) {console.log('RECV: ' + data)};
+			this.connection.rawOutput = function(data) {console.log('SENT: ' + data)};
+		}
 	}
 	
 	this.onMessage = function(stanza, room) {
-		traceC('Message');
+		traceChat('message');
 		var author, message, createTime;
 		
 		author = $(stanza).attr('from');
@@ -53,63 +45,75 @@ function QBChat(userID, userPass, logs) {
 		return true;
 	};
 	
-	this.muc = {
-		onRoster: function(users, room) {
-			_this.onChatRoster(users, room);
-			return true;
-		},
+	this.onPresence = function(stanza, room) {
+		traceChat('Presence');
+		var user, type, time, author;
+		
+		user = $(stanza).attr('from');
+		type = $(stanza).attr('type');
+		time = new Date().toISOString();
+		author = _this.getIDFromResource(user);
+		
+		_this.onChatPresence(author, type, time);
+		return true;
+	};
 	
-		onPresence: function(stanza, room) {
-			traceC('Presence');
-			var user, type, time, author;
-			
-			user = $(stanza).attr('from');
-			type = $(stanza).attr('type');
-			time = new Date().toISOString();
-			author = _this.getIDFromResource(user);
-			
-			_this.onChatPresence(author, type, time);
-			return true;
-		}
+	this.onRoster = function(users, room) {
+		_this.onChatRoster(users, room);
+		return true;
+	};
+	
+	// helpers
+	this.getJID = function(id) {
+		return id + "-" + QB.session.application_id + "@" + _this.config.server;
+	};
+	
+	this.getIDFromResource = function(jid) {
+		return Strophe.unescapeNode(Strophe.getResourceFromJid(jid));
+	};
+	
+	this.getIDFromNode = function(jid) {
+		return Strophe.getNodeFromJid(jid).split('-')[0];
 	};
 }
 
-QBChat.prototype.connect = function() {
+QBChat.prototype.connect = function(userID, userPass) {
 	var _this = this;
+	var userJID = this.getJID(userID);
 	
-	this.connection.connect(this.jid, this.pass, function (status) {
+	this.connection.connect(userJID, userPass, function(status) {
 		switch (status) {
 		case Strophe.Status.ERROR:
-			traceC('Error');
+			traceChat('Error');
 			break;
 		case Strophe.Status.CONNECTING:
-			traceC('Connecting');
+			traceChat('Connecting');
 			break;
 		case Strophe.Status.CONNFAIL:
-			traceC('Failed to connect');
+			traceChat('Failed to connect');
 			_this.onConnectFailed();
 			break;
 		case Strophe.Status.AUTHENTICATING:
-			traceC('Authenticating');
+			traceChat('Authenticating');
 			break;
 		case Strophe.Status.AUTHFAIL:
-			traceC('Unauthorized');
+			traceChat('Unauthorized');
 			_this.onConnectFailed();
 			break;
 		case Strophe.Status.CONNECTED:
-			traceC('Connected');
+			traceChat('Connected');
 			_this.connection.addHandler(_this.onMessage, null, 'message', 'chat', null, null);
 			_this.onConnectSuccess();
 			break;
 		case Strophe.Status.DISCONNECTING:
-			traceC('Disconnecting');
+			traceChat('Disconnecting');
 			_this.onConnectClosed();
 			break;
 		case Strophe.Status.DISCONNECTED:
-			traceC('Disconnected');
+			traceChat('Disconnected');
 			break;
 		case Strophe.Status.ATTACHED:
-			traceC('Attached');
+			traceChat('Attached');
 			break;
 		}
 	});
@@ -132,13 +136,13 @@ QBChat.prototype.disconnect = function() {
 };
 
 QBChat.prototype.join = function(roomJid, nick) {
-	this.connection.muc.join(roomJid, nick, this.onMessage, this.muc.onPresence, this.muc.onRoster);
+	this.connection.muc.join(roomJid, nick, this.onMessage, this.onPresence, this.onRoster);
 };
 
 QBChat.prototype.leave = function(roomJid, nick) {
 	this.connection.muc.leave(roomJid, nick);
 };
 
-function traceC(text) {
+function traceChat(text) {
 	console.log("[qb_chat]: " + text);
 }

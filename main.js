@@ -1,7 +1,10 @@
 var params, chatUser, chatService;
 
 $(document).ready(function() {
+	// Web SDK initialization
 	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret);
+	
+	// creation of QuickBlox session
 	QB.createSession(function(err, result) {
 		if (err) {
 			console.log(err.detail);
@@ -10,31 +13,33 @@ $(document).ready(function() {
 				backdrop: 'static',
 				keyboard: false
 			});
+			
+			$('.panel-heading .btn').tooltip();
+			updateTime();
+			
+			// events
+			$('#login').click(login);
+			$('#addRoom').click(addRoom);
+			$('#logout').click(logout);
+			$('.chat-container').on('click', '.sendMessage', sendMessage);
 		}
 	});
 	
-	$('#addNewRoom, #logout').tooltip();
-	updateTime();
-	
-	$('#loginSubmit').click(login);
-	$('#logout').click(logout);
-	$('.panel-chat').on('keydown', '.sendMessage', sendMessage);
-	$('.panel-chat').on('click', '.btn-sendMessage', sendMessage);
-	
 	window.onresize = function() {
-		$('.panel-body').height(this.innerHeight - 90);
+		var heightPanelHeaderAndPadding = 90;
+		$('.panel-body').height(this.innerHeight - heightPanelHeaderAndPadding);
 	};
 	
 	window.onbeforeunload = function() {
 		if (chatService) {
-    		$.ajax({
-    			async: false,
-	            url:  QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
-	            type: 'DELETE',
-	            beforeSend: function(jqXHR, settings) {
-		          jqXHR.setRequestHeader('QB-Token', QB.session.token);
-		        }
-		    });
+				$.ajax({
+					async: false,
+							url:	QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
+							type: 'DELETE',
+							beforeSend: function(jqXHR, settings) {
+							jqXHR.setRequestHeader('QB-Token', QB.session.token);
+						}
+				});
 		 }
 	};
 });
@@ -47,26 +52,26 @@ function login(event) {
 		password: '123123123' // default password
 	};
 	
-	if (!trim(params.login)) {
-		alert('Nickname is required');
-	} else {
+	// check if the user did not leave the empty field
+	if (trim(params.login)) {
 		$('#loginForm form').hide();
 		$('#loginForm .progress').show();
 		
+		// creation of chat user
 		QB.users.create(params, function(err, result) {
 			if (err) {
 				onConnectFailed();
-				alert(err.detail);
+				alertErrors(err);
 			} else {
 				chatUser = result;
 				chatUser.pass = params.password;
 				
-				QB.createSession({login: chatUser.login, password: chatUser.pass}, function(err, result) {
+				// authentication of chat user
+				QB.login(params, function(err, result) {
 					if (err) {
 						onConnectFailed();
-						alert(err.detail);
+						alertErrors(err);
 					} else {
-						//console.log(result);
 						connectChat();
 					}
 				});
@@ -76,15 +81,22 @@ function login(event) {
 }
 
 function connectChat() {
-	chatService = new QBChat(chatUser.id, chatUser.pass, {debug: false});
-	chatService.onConnectFailed = onConnectFailed;
-	chatService.onConnectSuccess = onConnectSuccess;
-	chatService.onConnectClosed = onConnectClosed;
-	chatService.onChatMessage = onChatMessage;
-	chatService.onChatRoster = onChatRoster;
-	chatService.onChatPresence = onChatPresence;
+	chatService = new QBChat({
+		// set chat callbacks
+		onConnectFailed: onConnectFailed,
+		onConnectSuccess: onConnectSuccess,
+		onConnectClosed: onConnectClosed,
+		onChatMessage: onChatMessage,
+		
+		// set MUC callbacks
+		onMUCPresence: onMUCPresence,
+		onMUCRoster: onMUCRoster,
+		
+		debug: false
+	});
 	
-	chatService.connect();
+	// connect to QB chat service
+	chatService.connect(chatUser.id, chatUser.pass);
 }
 
 function sendMessage(event) {
@@ -112,15 +124,17 @@ function logout() {
 	chatService.disconnect();
 }
 
-/* callbacks
--------------------------------------------*/
+/* Callbacks
+----------------------------------------------------------*/
 function onConnectFailed() {
 	$('#loginForm .progress').hide();
 	$('#loginForm form').show();
 }
 
 function onConnectSuccess() {
-	$('.panel-body').height(window.innerHeight - 90);
+	var heightPanelHeaderAndPadding = 90;
+	$('.panel-body').height(window.innerHeight - heightPanelHeaderAndPadding);
+	
 	$('#loginForm').modal('hide');
 	$('#wrap').show();
 	$('.sendMessage').focus();
@@ -147,25 +161,6 @@ function onConnectClosed() {
 	});
 }
 
-function onChatRoster(users, room) {
-	//console.log(users);
-	var occupants = Object.keys(users);
-	$('.users .list-group').html('');
-	$(occupants).each(function() {
-		$('.users .list-group').append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
-	});
-}
-
-function onChatPresence(author, type, time) {
-	if (type) {
-		$('.chat .message-wrap').append('<section class="service-message bg-warning text-danger" data-time="' + time + '">' + author + ' has left this chat.</section>');
-	} else {
-		$('.chat .message-wrap').append('<section class="service-message bg-warning text-success" data-time="' + time + '">' + author + ' has joined the chat.</section>');
-	}
-	$('.chat .service-message:last').fadeTo(500, 1);
-	$('.chat .message-wrap').scrollTo('*:last', 0);
-}
-
 function onChatMessage(author, message, createTime) {
 	var html, time = new Date().toISOString();
 	
@@ -184,14 +179,37 @@ function onChatMessage(author, message, createTime) {
 	$('.chat .message-wrap').scrollTo('*:last', 0);
 }
 
-/* helper functions
--------------------------------------------*/
+function onMUCPresence(author, type, time) {
+	if (type) {
+		$('.chat .message-wrap').append('<section class="service-message bg-warning text-danger" data-time="' + time + '">' + author + ' has left this chat.</section>');
+	} else {
+		$('.chat .message-wrap').append('<section class="service-message bg-warning text-success" data-time="' + time + '">' + author + ' has joined the chat.</section>');
+	}
+	$('.chat .service-message:last').fadeTo(500, 1);
+	$('.chat .message-wrap').scrollTo('*:last', 0);
+}
+
+function onMUCRoster(users, room) {
+	//console.log(users);
+	var occupants = Object.keys(users);
+	$('.users .list-group').html('');
+	$(occupants).each(function() {
+		$('.users .list-group').append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
+	});
+}
+
+/* Helper Functions
+----------------------------------------------------------*/
 function trim(str) {
 	if (str.charAt(0) == ' ')
 		str = trim(str.substring(1, str.length));
 	if (str.charAt(str.length-1) == ' ')
 		str = trim(str.substring(0, str.length-1));
 	return str;
+}
+
+function alertErrors(err) {
+	alert(JSON.stringify($.parseJSON(err.detail).errors));
 }
 
 function updateTime() {
