@@ -19,44 +19,38 @@
 					<span class="glyphicon glyphicon-log-out"></span>
 				</button>
 			</div>
+			
 			<div class="panel-body">
-				<div class="chat-list">
-					<div class="list-group">
-						<a href="#" class="list-group-item list-group-item-info">
-							<img src="images/glyphicons_244_conversation.png" class="groupchat-icon" alt="icon"> Public Room
-						</a>
-						
-						<!--<a href="#" class="list-group-item">
-							<span class="badge">5</span>
-							<img src="images/glyphicons_245_chat.png" class="groupchat-icon" alt="icon"> Private test
-						</a>-->
-					</div>
+				<div class="chat-list list-group">
+					<a href="#" class="list-group-item list-group-item-info">
+						<img src="images/glyphicons_244_conversation.png" alt="icon"> Public Room
+					</a>
+					<!--<a href="#" class="list-group-item">
+						<span class="badge">5</span>
+						<img src="images/glyphicons_245_chat.png" alt="icon"> Private test
+					</a>-->
 				</div>
 				
 				<div class="chat-container">
-					<div class="chat">
-						<div class="users">
-							<div class="list-group">
-							</div>
-						</div>
-						<div class="chat-conetent">
-							<div class="message-wrap">
-								<img src="images/loading.gif" alt="loading" class="loading">
-							</div>
-						</div>
-						<div class="controls">
-							<div class="input-group">
-							 <input type="text" class="form-control" placeholder="Enter your message here..">
-							 <span class="input-group-btn">
-								 <button class="sendMessage btn btn-primary" type="button">Send</button>
-							 </span>
-						</div>
+					<div id="chat-public" class="chat">
+						<div class="user-list list-group"></div>
+						<div class="chat-content">
+							<div class="messages"></div>
+							<form action="#" class="controls">
+								<div class="input-group">
+									 <input type="text" class="form-control" placeholder="Enter your message here..">
+									 <span class="input-group-btn">
+										 <button type="submit" class="sendMessage btn btn-primary">Send</button>
+									 </span>
+								</div>
+							</form>
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-	</div>
+				
+			</div><!-- .panel-body -->
+		</div><!-- .panel -->
+	</div><!-- #wrap -->
 	
 	<div id="loginForm" class="modal fade">
 		<div class="modal-dialog">

@@ -26,21 +26,21 @@ $(document).ready(function() {
 	});
 	
 	window.onresize = function() {
-		var heightPanelHeaderAndPadding = 90;
-		$('.panel-body').height(this.innerHeight - heightPanelHeaderAndPadding);
+		changeHeightChatBlock();
 	};
 	
+	// deleting of chat user if window has been closed
 	window.onbeforeunload = function() {
-		if (chatService) {
-				$.ajax({
-					async: false,
-							url:	QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
-							type: 'DELETE',
-							beforeSend: function(jqXHR, settings) {
-							jqXHR.setRequestHeader('QB-Token', QB.session.token);
-						}
-				});
-		 }
+		if (chatUser) {
+			$.ajax({
+				async: false,
+				url: QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
+				type: 'DELETE',
+				beforeSend: function(jqXHR, settings) {
+					jqXHR.setRequestHeader('QB-Token', QB.session.token);
+				}
+			});
+		}
 	};
 });
 
@@ -100,27 +100,22 @@ function connectChat() {
 }
 
 function sendMessage(event) {
-	var msg;
+	event.preventDefault();
+	var selector = $(this).parents('form').find('input:text');
+	var message = selector.val();
 	
-	if (event.type == 'keydown' && event.keyCode == 13 && !event.shiftKey) {
-		msg = $(this).val();
-		send();
-		return false;
-	} else if (event.type == 'click') {
-		msg = $('.sendMessage').val();
-		send();
-	}
-	
-	function send() {
-		if (trim(msg)) {
-			chatService.send(QBAPP.publicRoom, msg, 'groupchat');
-			$('.sendMessage').val('');
-		}
+	// check if the user did not leave the empty field
+	if (trim(message)) {
+		// send of user message
+		chatService.send(QBAPP.publicRoom, message, 'groupchat');
+		selector.val('');
 	}
 }
 
 function logout() {
+	// leave the public room
 	chatService.leave(QBAPP.publicRoom, chatUser.login);
+	// close the connection
 	chatService.disconnect();
 }
 
@@ -132,25 +127,30 @@ function onConnectFailed() {
 }
 
 function onConnectSuccess() {
-	var heightPanelHeaderAndPadding = 90;
-	$('.panel-body').height(window.innerHeight - heightPanelHeaderAndPadding);
-	
 	$('#loginForm').modal('hide');
-	$('#wrap').show();
-	$('.sendMessage').focus();
+	$('#wrap, #chat-public').show();
+	$('#chat-public .user-list').html('');
+	$('#chat-public .messages').html('<img src="images/loading.gif" alt="loading" class="loading">');
+	$('#chat-public input:text').focus().val('');
+	changeHeightChatBlock();
 	
+	// join to Public Room by default
 	chatService.join(QBAPP.publicRoom, chatUser.login);
-	setTimeout(function() {$('.loading').remove()}, 2 * 1000);
+	
+	setTimeout(function() { $('.loading').remove() }, 2 * 1000);
 }
 
 function onConnectClosed() {
 	$('#wrap').hide();
+	$('.chat:not(#chat-public)').remove();
+	$('.chat-list:not(:first)').remove();
+	
+	$('#loginForm').modal('show');
 	$('#loginForm .progress').hide();
 	$('#loginForm form').show();
-	$('#nickname').val('');
-	$('.message-wrap').html('<img src="images/loading.gif" alt="loading" class="loading">');
-	$('#loginForm').modal('show');
+	$('#nickname').focus().val('');
 	
+	// deleting of chat user
 	QB.users.delete(chatUser.id, function(err, result) {
 		if (err) {
 			console.log(err.detail);
@@ -161,45 +161,56 @@ function onConnectClosed() {
 	});
 }
 
-function onChatMessage(author, message, createTime) {
-	var html, time = new Date().toISOString();
+function onChatMessage(nick, type, time, message) {
+	var html;
+	var selector = choseSelector().find('.messages');
 	
-	html = '<section class="message white">';
-	html += '<header><b>' + chatService.getIDFromResource(author) + '</b> ';
-	html += '<time datetime="' + createTime + '">' + $.timeago(createTime) + '</time>';
-	html += '</header><div class="message-description">' + parser(message) + '</div></section>';
+	html = '<section class="message">';
+	html += '<header><b>' + nick + '</b>';
+	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
+	html += '<div class="message-description">' + message + '</div></section>';
 	
-	if (createTime < time)
-		$('.chat .service-message').addClass('hidden');
+	// hide the old presences
+	if (time < selector.find('.service-message:last').data('time'))
+		selector.find('.service-message').addClass('hidden');
 	
 	$('.loading').remove();
-	$('.chat .message-wrap').append(html);
-	$('.chat .message').removeClass('white');
-	$('.chat .message:even').addClass('white');
-	$('.chat .message-wrap').scrollTo('*:last', 0);
+	
+	selector.append(html);
+	selector.find('.message:even').addClass('white');
+	selector.scrollTo('*:last', 0);
 }
 
-function onMUCPresence(author, type, time) {
-	if (type) {
-		$('.chat .message-wrap').append('<section class="service-message bg-warning text-danger" data-time="' + time + '">' + author + ' has left this chat.</section>');
-	} else {
-		$('.chat .message-wrap').append('<section class="service-message bg-warning text-success" data-time="' + time + '">' + author + ' has joined the chat.</section>');
-	}
-	$('.chat .service-message:last').fadeTo(500, 1);
-	$('.chat .message-wrap').scrollTo('*:last', 0);
+function onMUCPresence(nick, type, time) {
+	var selector = choseSelector().find('.messages');
+	
+	if (type == 'unavailable')
+		selector.append('<section class="service-message bg-warning text-danger" data-time="' + time + '">' + nick + ' has left this chat.</section>');
+	else
+		selector.append('<section class="service-message bg-warning text-success" data-time="' + time + '">' + nick + ' has joined the chat.</section>');
+	
+	selector.find('.service-message:last').fadeTo(500, 1);
+	selector.scrollTo('*:last', 0);
 }
 
 function onMUCRoster(users, room) {
-	//console.log(users);
 	var occupants = Object.keys(users);
-	$('.users .list-group').html('');
+	var selector = choseSelector().find('.user-list');
+	
+	// filling of user list
+	selector.html('');
 	$(occupants).each(function() {
-		$('.users .list-group').append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
+		selector.append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
 	});
 }
 
 /* Helper Functions
 ----------------------------------------------------------*/
+function updateTime() {
+	$('.message time').timeago().removeAttr('title');
+	setTimeout(updateTime, 60 * 1000);
+}
+
 function trim(str) {
 	if (str.charAt(0) == ' ')
 		str = trim(str.substring(1, str.length));
@@ -212,20 +223,13 @@ function alertErrors(err) {
 	alert(JSON.stringify($.parseJSON(err.detail).errors));
 }
 
-function updateTime() {
-	$('.message time').timeago().removeAttr('title');
-	setTimeout(updateTime, 60 * 1000);
+function changeHeightChatBlock() {
+	var outerHeightWrapHeader = 90;
+	var outerHeightControls = 38;
+	$('.panel-body').height(window.innerHeight - outerHeightWrapHeader);
+	$('.messages').height(window.innerHeight - outerHeightWrapHeader - outerHeightControls);
 }
 
-function parser(str) {
-	var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
-	return str.replace(URL_REGEXP, function(match) {
-		url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
-		url_text = match;
-		return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
-	});
-	
-	function escapeHTML(s) {
-		return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-	}
+function choseSelector(id) {
+	return $('#chat-public').add('#chat-' + id);
 }

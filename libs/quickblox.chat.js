@@ -1,6 +1,6 @@
 /**
  * QuickBlox Chat library
- * version 0.3.0
+ * version 0.4.0
  *
  * Author: Andrey Povelichenko (andrey.povelichenko@quickblox.com)
  *
@@ -34,32 +34,47 @@ function QBChat(params) {
 	}
 	
 	this.onMessage = function(stanza, room) {
-		traceChat('message');
-		var author, message, createTime;
+		var jid, type, time, message, nick;
 		
-		author = $(stanza).attr('from');
+		if (params && params.debug) {
+			traceChat('Message');
+			console.log(stanza);
+		}
+		
+		jid = $(stanza).attr('from');
+		type = $(stanza).attr('type');
+		time = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
 		message = $(stanza).find('body').context.textContent;
-		createTime = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
 		
-		_this.onChatMessage(author, message, createTime);
+		if (type == 'groupchat')
+			nick = _this.getNickFromResource(jid);
+		else
+			nick = _this.getNickFromNode(jid);
+		
+		_this.onChatMessage(nick, type, time, _parser(message));
 		return true;
 	};
 	
 	this.onPresence = function(stanza, room) {
-		traceChat('Presence');
-		var user, type, time, author;
+		var jid, type, time, nick;
 		
-		user = $(stanza).attr('from');
+		if (params && params.debug) {
+			traceChat('Presence');
+			console.log(stanza);
+		}
+		
+		jid = $(stanza).attr('from');
 		type = $(stanza).attr('type');
 		time = new Date().toISOString();
-		author = _this.getIDFromResource(user);
 		
-		_this.onChatPresence(author, type, time);
+		nick = _this.getNickFromResource(jid);
+		
+		_this.onMUCPresence(nick, type, time);
 		return true;
 	};
 	
 	this.onRoster = function(users, room) {
-		_this.onChatRoster(users, room);
+		_this.onMUCRoster(users, room);
 		return true;
 	};
 	
@@ -68,15 +83,35 @@ function QBChat(params) {
 		return id + "-" + QB.session.application_id + "@" + _this.config.server;
 	};
 	
-	this.getIDFromResource = function(jid) {
-		return Strophe.unescapeNode(Strophe.getResourceFromJid(jid));
-	};
-	
-	this.getIDFromNode = function(jid) {
+	this.getNickFromNode = function(jid) {
 		return Strophe.getNodeFromJid(jid).split('-')[0];
 	};
+	
+	this.getNickFromResource = function(jid) {
+		return Strophe.getResourceFromJid(jid);
+	};
+	
+	// private methods
+	function _parser(str) {
+		var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+		return str.replace(URL_REGEXP, function(match) {
+			url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
+			url_text = match;
+			return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
+		});
+		
+		function escapeHTML(s) {
+			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+		}
+	}
 }
 
+function traceChat(text) {
+	console.log("[qb_chat]: " + text);
+}
+
+/* One to One Chat methods
+----------------------------------------------------------*/
 QBChat.prototype.connect = function(userID, userPass) {
 	var _this = this;
 	var userJID = this.getJID(userID);
@@ -119,14 +154,16 @@ QBChat.prototype.connect = function(userID, userPass) {
 	});
 };
 
-QBChat.prototype.send = function(jid, msg, type) {
-	var params = {
+QBChat.prototype.send = function(jid, body, type) {
+	var params, msg;
+	
+	params = {
 		to: jid,
 		from: this.connection.jid,
 		type: type
 	};
 	
-	msg = $msg(params).c('body').t(msg);
+	msg = $msg(params).c('body').t(body);
 	this.connection.send(msg);
 };
 
@@ -135,6 +172,8 @@ QBChat.prototype.disconnect = function() {
 	this.connection.disconnect();
 };
 
+/* MUC methods
+----------------------------------------------------------*/
 QBChat.prototype.join = function(roomJid, nick) {
 	this.connection.muc.join(roomJid, nick, this.onMessage, this.onPresence, this.onRoster);
 };
@@ -142,7 +181,3 @@ QBChat.prototype.join = function(roomJid, nick) {
 QBChat.prototype.leave = function(roomJid, nick) {
 	this.connection.muc.leave(roomJid, nick);
 };
-
-function traceChat(text) {
-	console.log("[qb_chat]: " + text);
-}

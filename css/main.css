@@ -22,16 +22,16 @@ body {
 		width: 80%;
 		margin: 0 auto;
 	}
-		#loginForm .progress-bar {
+		#loginForm .progress .progress-bar {
 			width: 100%;
 		}
 
-/* Wrapper panel
+/* Wrapper Panel
 ----------------------------------------------------------*/
 #wrap {
 	display: none;
 	max-width: 980px;
-	min-width: 775px;
+	min-width: 700px;
 	width: 95%;
 	height: 100%;
 	margin: 0 auto;
@@ -63,81 +63,80 @@ body {
 
 /* Chat module
 ----------------------------------------------------------*/
-.chat-list {
-	float: left;
-	width: 200px;
-	height: 100%;
-	overflow: auto;
-}
-.users {
-	float: right;
-	width: 200px;
-	height: 100%;
-	overflow: auto;
-}
-.chat {
-	overflow: hidden;
-	height: 100%;
-	background: #ececec;
-}
-	.chat .form-group {
-		width: 100%;
-		float: left;
-		padding-right: 62px;
-	}
-		.chat .form-group input {
-			width: 100%;
-		}
-	.chat .sendMessage {
-		margin-left: -60px;
-	}
-.chat-conetent {
-	height: 100%;
-	padding: 0 2px 38px;
-}
-	.message-wrap {
-		height: 100%;
-		overflow: auto;
-		position: relative;
-	}
-	.white {
-		background: #fff;
-	}
-		.loading {
-			position: absolute;
-			width: 50px;
-			height: 50px;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			margin: auto;
-		}
-.controls {
-	height: 38px;
-	margin-top: -38px;
-	padding: 2px;
-}
-.list-group a {
-	border-radius: 0 !important;
-}
-.list-group-item {
-	border-right: 0;
-	border-left: 0;
-}
-.groupchat-icon {
-	width: 23px;
-	vertical-align: text-top;
+/* Loading */
+.loading {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 50px;
+	height: 50px;
+	margin: auto;
 }
 
-.message,
-.service-message {
+/* Chats */
+.chat-container {
+	overflow: hidden;
+	height: 100%;
+}
+
+.chat {
+	height: 100%;
+}
+	.chat .chat-content {
+		overflow: hidden;
+		height: 100%;
+		background: #ececec;
+		border-left: 2px solid #ececec;
+		border-right: 2px solid #ececec;
+	}
+		.chat .messages {
+			overflow: auto;
+		}
+		.chat .controls {
+			height: 38px;
+			padding: 2px;
+		}
+
+/* Chats and Users Lists */
+.chat-list,
+.user-list {
+	width: 200px;
+	height: 100%;
+	overflow: auto;
+}
+.chat-list {
+	float: left;
+}
+.user-list {
+	float: right;
+}
+	.list-group-item {
+		border-left: 0;
+		border-right: 0;
+		border-radius: 0 !important;
+	}
+		.list-group-item img {
+			width: 23px;
+			vertical-align: text-top;
+		}
+
+/* Messages */
+.message {
 	padding: 5px;
 }
-.service-message {
-	opacity: 0;
+.message.white {
+	background: #fff;
 }
 	.message time {
 		float: right;
+		font-size: 13px;
 		color: #999;
 	}
+
+.service-message {
+	padding: 5px;
+	font-size: 13px;
+	opacity: 0;
+}
