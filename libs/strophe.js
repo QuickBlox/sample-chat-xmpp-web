@@ -1008,6 +1008,25 @@ Strophe = {
         text = text.replace(/"/g,  "&quot;");
         return text;
     },
+    
+    /*  Function: xmlunescape
+     *  Unexcapes invalid xml characters.
+     *
+     *  Parameters:
+     *     (String) text - text to unescape.
+     *
+     *  Returns:
+     *      Unescaped text.
+     */
+    xmlunescape: function(text)
+    {
+        text = text.replace(/\&amp;/g, "&");
+        text = text.replace(/&lt;/g,  "<");
+        text = text.replace(/&gt;/g,  ">");
+        text = text.replace(/&apos;/g,  "'");
+        text = text.replace(/&quot;/g,  "\"");
+        return text;
+    },
 
     /** Function: xmlTextNode
      *  Creates an XML DOM text node.

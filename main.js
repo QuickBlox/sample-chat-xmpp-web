@@ -22,6 +22,7 @@ $(document).ready(function() {
 			$('#addRoom').click(addRoom);
 			$('#logout').click(logout);
 			$('.chat-container').on('click', '.sendMessage', sendMessage);
+			$('.chat-container').on('click', '.user-list a', createPrivateChat);
 		}
 	});
 	
@@ -119,6 +120,67 @@ function logout() {
 	chatService.disconnect();
 }
 
+/* Private chat
+----------------------------------------------------------*/
+function createPrivateChat(event) {
+	event.preventDefault();
+	var nick, qbID, chatID, selector;
+	
+	nick = $(this).data('nick');
+	qbID = $(this).data('qb') || getQBUserID(nick);
+	
+	// get QB user by login
+	QB.users.get({login: login}, function(err, result) {
+		if (err) {
+			console.log(err.detail);
+		} else {
+			qbID = result.id;
+		}
+	});
+	
+	
+	chatID = '#chat-' + qbID;
+	
+	// check if this chat has already exist
+	if ($('.chat').is(chatID)) {
+		$('.chat:visible').hide();
+		$(chatID).show();
+		
+		selector = $(chatID).find('.messages');
+		selector.scrollTo('*:last', 0);
+		//deleteMessageCount(chatID.substring(1));
+	} else {
+		htmlChatBuilder(chatID, nick, qbID, true);
+	}
+}
+
+function htmlChatBuilder(chatID, nick, qbID, isOwner) {
+	var obj, html;
+	
+	html = '<a href="#" class="list-group-item list-group-item-info" data-id="' + chatID + '">';
+	html += '<img src="images/glyphicons_245_chat.png" alt="icon"> ' + nick + '</a>';
+	
+	$('.chat-list a').removeClass('list-group-item-info');
+	$('.chat-list').append(html);
+	
+	html = '<a href="#" class="list-group-item btn disabled" data-nick="' + chatUser.login + '"><span class="glyphicon glyphicon-user"></span> ' + chatUser.login + '</a>';
+	html += '<a href="#" class="list-group-item btn" data-nick="' + nick + '"  data-qb="' + qbID + '"><span class="glyphicon glyphicon-user"></span> ' + nick + '</a>';
+	
+	if (isOwner) {
+		$('#chat-public').hide().clone().show().insertAfter('.chat:last');
+		obj = $('.chat:visible');
+	} else {
+		$('#chat-public').clone().hide().insertAfter('.chat:last');
+		obj = $('.chat:last');
+	}
+	
+	obj.attr('id', chatID.substring(1));
+	obj.find('.user-list').html(html);
+	obj.find('.messages').empty();
+	obj.find('input:text').focus().val('');
+	$('.panel-title').text(nick);
+}
+
 /* Callbacks
 ----------------------------------------------------------*/
 function onConnectFailed() {
@@ -199,8 +261,12 @@ function onMUCRoster(users, room) {
 	
 	// filling of user list
 	selector.html('');
-	$(occupants).each(function() {
-		selector.append('<a href="#" class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
+	$(occupants).each(function(i) {
+		selector.append('<a href="#" class="list-group-item btn" data-nick="' + this + '"><span class="glyphicon glyphicon-user"></span> ' + this + '</a>');
+		
+		// disable of current user's element
+		if (occupants[i] == chatUser.login)
+			selector.find('a:last').addClass('disabled');
 	});
 }
 

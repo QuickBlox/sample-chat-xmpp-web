@@ -11,6 +11,7 @@ function QBChat(params) {
 	
 	this.config = {
 		server: 'chat.quickblox.com',
+		muc: 'muc.chat.quickblox.com',
 		bosh: 'http://chat.quickblox.com:5280'
 	};
 	
@@ -180,4 +181,56 @@ QBChat.prototype.join = function(roomJid, nick) {
 
 QBChat.prototype.leave = function(roomJid, nick) {
 	this.connection.muc.leave(roomJid, nick);
+};
+
+QBChat.prototype.createRoom = function(roomName, nick) {
+	var _this = this;
+	var roomJid = QB.session.application_id + '_' + roomName + '@' + this.config.muc;
+	this.newRoom = roomJid;
+	var pres =	$pres({"from": this.connection.jid, "to": roomJid + "/" + nick}).c("x", {"xmlns": Strophe.NS.MUC});
+	this.connection.send(pres);
+	
+	setTimeout(function() {
+		_this.connection.muc.createInstantRoom(roomJid,
+		                                      function() {
+		                                        console.log('Room created');
+	                                            _this.connection.muc.configure(roomJid, handlerNEW, errorNEW);
+	                                            console.log('Room !! OK');
+		                                      },
+		                                      function() {
+		                                      	console.log('Room created error');
+		                                      });
+	}, 1 * 1000);
+	
+	function handlerNEW(config) {
+		console.log('Room config set');
+		$(config).find('field[var="muc#roomconfig_persistentroom"]').find('value').text(1);
+		console.log($(config).find('field[var="muc#roomconfig_persistentroom"]')[0]);
+		var arr = [$(config).find('field[var="muc#roomconfig_persistentroom"]')[0]];
+		_this.connection.muc.saveConfiguration(roomJid, arr, successNEW, errorNEW);
+	}
+	
+	function errorNEW(test) {
+		console.log('errorNEW');
+		console.log('test');
+	}
+	
+	function successNEW(config) {
+		console.log('Room config save complete');
+	}
+};
+
+QBChat.prototype.destroy = function(roomName) {
+	console.log('destroy');
+	var roomJid = QB.session.application_id + '_' + roomName + '@' + this.config.muc;
+	var iq = $iq({"from": this.connection.jid, "to": roomJid, "type": 'set'})
+	         .c("query", {"xmlns": "http://jabber.org/protocol/muc#owner"})
+	         .c('destroy').c('reason').t('Sorry, this room was removed');
+	this.connection.send(iq);
+};
+
+QBChat.prototype.invite = function(receiver) {
+	console.log('invite');
+	var userJID = this.getJID(receiver);
+	this.connection.muc.invite(this.newRoom, userJID);
 };

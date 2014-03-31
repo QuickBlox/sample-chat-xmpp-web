@@ -113,9 +113,13 @@ body {
 	float: right;
 }
 	.list-group-item {
+		color: #555 !important;
 		border-left: 0;
 		border-right: 0;
 		border-radius: 0 !important;
+	}
+	.list-group-item.btn {
+		text-align: left;
 	}
 		.list-group-item img {
 			width: 23px;
