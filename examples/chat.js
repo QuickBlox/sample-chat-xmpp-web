@@ -157,7 +157,7 @@ function htmlChatBuilder(chatID, nick, qbID, isOwner) {
 	var obj, html;
 	
 	html = '<a href="#" class="list-group-item list-group-item-info" data-id="' + chatID + '">';
-	html += '<img src="images/glyphicons_245_chat.png" alt="icon"> ' + nick + '</a>';
+	html += '<img src="../images/glyphicons_245_chat.png" alt="icon"> ' + nick + '</a>';
 	
 	$('.chat-list a').removeClass('list-group-item-info');
 	$('.chat-list').append(html);
@@ -191,7 +191,7 @@ function onConnectSuccess() {
 	$('#loginForm').modal('hide');
 	$('#wrap, #chat-public').show();
 	$('#chat-public .user-list').html('');
-	$('#chat-public .messages').html('<img src="images/loading.gif" alt="loading" class="loading">');
+	$('#chat-public .messages').html('<img src="../images/loading.gif" alt="loading" class="loading">');
 	$('#chat-public input:text').focus().val('');
 	changeHeightChatBlock();
 	
