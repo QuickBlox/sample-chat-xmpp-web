@@ -45,6 +45,10 @@ $(document).ready(function() {
 	};
 });
 
+function addRoom() {
+	
+}
+
 function login(event) {
 	event.preventDefault();
 	
