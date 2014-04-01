@@ -101,7 +101,7 @@ function showMessage(nick, message, time) {
 	html = '<section class="message">';
 	html += '<header><b>' + nick + '</b>';
 	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
-	html += '<div class="message-description">' + chatService.parser(message) + '</div></section>';
+	html += '<div class="message-description">' + QBChatHelpers.parser(message) + '</div></section>';
 	
 	selector.append(html);
 	selector.find('.message:even').addClass('white');
