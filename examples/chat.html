@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>QB Web Chat sample</title>
+	<title>QB Web Chat sample - One to One Chat</title>
 	
 	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="../css/styles.css">
@@ -12,21 +12,12 @@
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title">Public Room</h3>
-				<button type="button" id="addRoom" class="btn" data-toggle="tooltip" data-placement="bottom" title="Add new chat room">
-					<span class="glyphicon glyphicon-plus-sign"></span>
-				</button>
 				<button type="button" id="logout" class="btn" data-toggle="tooltip" data-placement="bottom" title="Exit">
 					<span class="glyphicon glyphicon-log-out"></span>
 				</button>
 			</div>
 			
 			<div class="panel-body">
-				<div class="chat-list list-group">
-					<a href="#" class="list-group-item list-group-item-info">
-						<img src="../images/glyphicons_244_conversation.png" alt="icon"> Public Room
-					</a>
-				</div>
-				
 				<div class="chat-container">
 					<div id="chat-public" class="chat">
 						<div class="user-list list-group"></div>
@@ -52,16 +43,13 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h4 class="modal-title">Welcome to QB Web Chat sample</h4>
+					<h3 class="modal-title">One to One chat<br>
+						<a href="http://quickblox.com" target="_blank"><img src="../images/qb_logo.png" alt="quickblox logo">by QuickBlox</a>
+					</h3>
 				</div>
 				<div class="modal-body">
-					<form action="#">
-						<div class="form-group">
-							<input type="text" id="nickname" class="form-control" placeholder="Enter nickname" autofocus>
-						</div>
-						<button type="submit" id="login" class="btn btn-primary btn-block">Connect</button>
-					</form>
-					
+					<button type="button" value="Quick" class="btn btn-primary btn-lg btn-block">Sign in with Quick</button>
+					<button type="button" value="Blox" class="btn btn-success btn-lg btn-block">Sign in with Blox</button>
 					<div class="progress progress-striped active">
 						<div class="progress-bar"></div>
 					</div>

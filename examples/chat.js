@@ -18,66 +18,38 @@ $(document).ready(function() {
 			updateTime();
 			
 			// events
-			$('#login').click(login);
+			$('#loginForm button').click(login);
 			$('#logout').click(logout);
 			$('.chat-container').on('click', '.sendMessage', sendMessage);
-			$('.chat-container').on('click', '.user-list a', createPrivateChat);
 		}
 	});
 	
 	window.onresize = function() {
 		changeHeightChatBlock();
 	};
-	
-	// deleting of chat user if window has been closed
-	window.onbeforeunload = function() {
-		if (chatUser) {
-			$.ajax({
-				async: false,
-				url: QB.config.urls.base + QB.config.urls.users + '/' + chatUser.id + QB.config.urls.type,
-				type: 'DELETE',
-				beforeSend: function(jqXHR, settings) {
-					jqXHR.setRequestHeader('QB-Token', QB.session.token);
-				}
-			});
-		}
-	};
 });
 
-function login(event) {
-	event.preventDefault();
-	
+function login() {
 	params = {
-		login: $('#nickname').val(),
+		login: $(this).val(),
 		password: '123123123' // default password
 	};
 	
-	// check if the user did not leave the empty field
-	if (trim(params.login)) {
-		$('#loginForm form').hide();
-		$('#loginForm .progress').show();
-		
-		// creation of chat user
-		QB.users.create(params, function(err, result) {
-			if (err) {
-				onConnectFailed();
-				alertErrors(err);
-			} else {
-				chatUser = result;
-				chatUser.pass = params.password;
-				
-				// authentication of chat user
-				QB.login(params, function(err, result) {
-					if (err) {
-						onConnectFailed();
-						alertErrors(err);
-					} else {
-						connectChat();
-					}
-				});
-			}
-		});
-	}
+	$('#loginForm button').hide();
+	$('#loginForm .progress').show();
+	
+	// authentication of chat user
+	QB.login(params, function(err, result) {
+		if (err) {
+			onConnectFailed();
+			alertErrors(err);
+		} else {
+			chatUser = result;
+			chatUser.pass = params.password;
+			
+			connectChat();
+		}
+	});
 }
 
 function connectChat() {
@@ -87,10 +59,6 @@ function connectChat() {
 		onConnectSuccess: onConnectSuccess,
 		onConnectClosed: onConnectClosed,
 		onChatMessage: onChatMessage,
-		
-		// set MUC callbacks
-		onMUCPresence: onMUCPresence,
-		onMUCRoster: onMUCRoster,
 		
 		debug: false
 	});
@@ -184,21 +152,15 @@ function htmlChatBuilder(chatID, nick, qbID, isOwner) {
 ----------------------------------------------------------*/
 function onConnectFailed() {
 	$('#loginForm .progress').hide();
-	$('#loginForm form').show();
+	$('#loginForm button').show();
 }
 
 function onConnectSuccess() {
 	$('#loginForm').modal('hide');
 	$('#wrap, #chat-public').show();
-	$('#chat-public .user-list').html('');
-	$('#chat-public .messages').html('<img src="../images/loading.gif" alt="loading" class="loading">');
+	$('#chat-public .user-list, #chat-public .messages').empty();
 	$('#chat-public input:text').focus().val('');
 	changeHeightChatBlock();
-	
-	// join to Public Room by default
-	chatService.join(QBAPP.publicRoom, chatUser.login);
-	
-	setTimeout(function() { $('.loading').remove() }, 2 * 1000);
 }
 
 function onConnectClosed() {
@@ -208,8 +170,7 @@ function onConnectClosed() {
 	
 	$('#loginForm').modal('show');
 	$('#loginForm .progress').hide();
-	$('#loginForm form').show();
-	$('#nickname').focus().val('');
+	$('#loginForm button').show();
 	
 	// deleting of chat user
 	QB.users.delete(chatUser.id, function(err, result) {

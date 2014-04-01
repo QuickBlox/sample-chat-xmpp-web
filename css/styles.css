@@ -14,9 +14,26 @@ body {
 	bottom: 0;
 	left: 0;
 	width: 310px;
-	height: 181px;
+	height: 244px;
 	margin: auto;
 }
+	#loginForm .modal-title {
+		font-size: 32px;
+		line-height: 30px;
+		text-align: center;
+	}
+		#loginForm .modal-title a {
+			font-size: 16px;
+			color: inherit;
+			text-decoration: none;
+		}
+			#loginForm .modal-title img {
+				width: 18px;
+				margin-right: 6px;
+			}
+	#loginForm button:first-child {
+		margin-bottom: 15px;
+	}
 	#loginForm .progress {
 		display: none;
 		width: 80%;
@@ -30,7 +47,7 @@ body {
 ----------------------------------------------------------*/
 #wrap {
 	display: none;
-	max-width: 980px;
+	max-width: 880px;
 	min-width: 700px;
 	width: 95%;
 	height: 100%;
@@ -39,7 +56,6 @@ body {
 }
 	#wrap .panel-heading {
 		position: relative;
-		text-align: center;
 	}
 		#wrap .panel-heading .btn {
 			position: absolute;
