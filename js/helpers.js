@@ -19,11 +19,15 @@ function alertErrors(err) {
 
 function changeHeightChatBlock() {
 	var outerHeightWrapHeader = 90;
-	var outerHeightControls = 38;
+	var outerHeightControls = 42;
 	$('.panel-body').height(window.innerHeight - outerHeightWrapHeader);
 	$('.messages').height(window.innerHeight - outerHeightWrapHeader - outerHeightControls);
 }
 
 function choseSelector(id) {
 	return $('#chat-public').add('#chat-' + id);
+}
+
+function choseUser(login) {
+	return login == 'Quick' ? 'Blox' : 'Quick';
 }

@@ -17,31 +17,34 @@ body {
 	height: 244px;
 	margin: auto;
 }
-	#loginForm .modal-title {
-		font-size: 32px;
-		line-height: 30px;
-		text-align: center;
+
+#loginForm .modal-title {
+	font-size: 32px;
+	line-height: 30px;
+	text-align: center;
+}
+	#loginForm .modal-title a {
+		font-size: 16px;
+		color: inherit;
+		text-decoration: none;
 	}
-		#loginForm .modal-title a {
-			font-size: 16px;
-			color: inherit;
-			text-decoration: none;
+		#loginForm .modal-title img {
+			width: 18px;
+			margin-right: 6px;
 		}
-			#loginForm .modal-title img {
-				width: 18px;
-				margin-right: 6px;
-			}
-	#loginForm button:first-child {
-		margin-bottom: 15px;
+
+#loginForm button:first-child {
+	margin-bottom: 15px;
+}
+
+#loginForm .progress {
+	display: none;
+	width: 80%;
+	margin: 0 auto;
+}
+	#loginForm .progress .progress-bar {
+		width: 100%;
 	}
-	#loginForm .progress {
-		display: none;
-		width: 80%;
-		margin: 0 auto;
-	}
-		#loginForm .progress .progress-bar {
-			width: 100%;
-		}
 
 /* Wrapper Panel
 ----------------------------------------------------------*/
@@ -111,8 +114,8 @@ body {
 			overflow: auto;
 		}
 		.chat .controls {
-			height: 38px;
-			padding: 2px;
+			height: 42px;
+			padding: 4px 2px;
 		}
 
 /* Chats and Users Lists */
@@ -153,6 +156,9 @@ body {
 		float: right;
 		font-size: 13px;
 		color: #999;
+	}
+	.message .message-description {
+		word-wrap: break-word;
 	}
 
 .service-message {
