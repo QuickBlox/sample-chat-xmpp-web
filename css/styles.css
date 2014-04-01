@@ -1,0 +1,168 @@
+/* Global
+----------------------------------------------------------*/
+html,
+body {
+	height: 100%;
+}
+
+/* Login Form
+----------------------------------------------------------*/
+#loginForm .modal-dialog {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 310px;
+	height: 244px;
+	margin: auto;
+}
+
+#loginForm .modal-title {
+	font-size: 32px;
+	line-height: 30px;
+	text-align: center;
+}
+	#loginForm .modal-title a {
+		font-size: 16px;
+		color: inherit;
+		text-decoration: none;
+	}
+		#loginForm .modal-title img {
+			width: 18px;
+			margin-right: 7px;
+		}
+
+#loginForm button:first-child {
+	margin-bottom: 15px;
+}
+
+#loginForm .progress {
+	display: none;
+	width: 80%;
+	margin: 0 auto;
+}
+	#loginForm .progress .progress-bar {
+		width: 100%;
+	}
+
+/* Wrapper Panel
+----------------------------------------------------------*/
+#wrap {
+	display: none;
+	max-width: 850px;
+	min-width: 600px;
+	width: 95%;
+	height: 100%;
+	margin: 0 auto;
+	padding: 20px 0 30px;
+}
+	#wrap .panel-heading {
+		position: relative;
+	}
+		#wrap .panel-heading button {
+			position: absolute;
+			top: 0;
+			font-size: 18px;
+			color: #fff !important;
+			background: none;
+			outline: 0;
+		}
+		#wrap .panel-heading button:hover {
+			opacity: 0.7;
+		}
+		#wrap .panel-heading #logout {
+			right: 0;
+		}
+		#wrap .panel-heading #addRoom {
+			left: 0;
+		}
+	#wrap .panel-body {
+		padding: 0;
+	}
+
+/* Chat Module
+----------------------------------------------------------*/
+/* Chats */
+.chat-container {
+	overflow: hidden;
+	height: 100%;
+}
+
+.chat {
+	height: 100%;
+}
+	.chat .chat-content {
+		overflow: hidden;
+		height: 100%;
+		padding: 0 2px;
+		background: #ececec;
+	}
+		.chat .messages {
+			overflow: auto;
+		}
+		.chat .controls {
+			height: 42px;
+			padding: 4px 2px;
+		}
+
+/* Chats and Users Lists */
+.chat-list,
+.chat-user-list {
+	width: 200px;
+	height: 100%;
+	overflow: auto;
+}
+.chat-list {
+	float: left;
+}
+.chat-user-list {
+	float: right;
+}
+	.list-group-item {
+		color: #555 !important;
+		border-left: 0;
+		border-right: 0;
+		border-radius: 0 !important;
+	}
+	.list-group-item.btn {
+		text-align: left;
+	}
+		.list-group-item img {
+			width: 23px;
+			vertical-align: text-top;
+		}
+
+/* Messages */
+.message {
+	padding: 5px;
+}
+.message.white {
+	background: #fff;
+}
+	.message time {
+		float: right;
+		font-size: 13px;
+		color: #999;
+	}
+	.message .message-description {
+		word-wrap: break-word;
+	}
+
+.service-message {
+	padding: 5px;
+	font-size: 13px;
+	opacity: 0;
+}
+
+/* Loading */
+.loading {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 50px;
+	height: 50px;
+	margin: auto;
+}
