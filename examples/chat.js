@@ -1,4 +1,6 @@
 var params, chatUser, chatService;
+
+// Storage QB user ids by their logins
 var users = {
 	Quick: '978815',
 	Blox: '978816'
@@ -57,15 +59,18 @@ function login() {
 }
 
 function connectChat() {
-	chatService = new QBChat({
-		// set chat callbacks
+	// setting parameters of Chat object
+	params = {
+		// chat callbacks
 		onConnectFailed: onConnectFailed,
 		onConnectSuccess: onConnectSuccess,
 		onConnectClosed: onConnectClosed,
 		onChatMessage: onChatMessage,
 		
 		debug: false
-	});
+	};
+	
+	chatService = new QBChat(params);
 	
 	// connect to QB chat service
 	chatService.connect(chatUser.id, chatUser.pass);
@@ -73,19 +78,34 @@ function connectChat() {
 
 function sendMessage(event) {
 	event.preventDefault();
-	var selector, message, receiver;
+	var elem, message, opponentID;
 	
-	selector = $(this).parents('form').find('input:text');
-	message = selector.val();
-	receiver = users[choseUser(chatUser.login)];
+	elem = $(this).parents('form').find('input:text');
+	message = elem.val();
 	
 	// check if the user did not leave the empty field
 	if (trim(message)) {
+		opponentID = users[chooseOpponent(chatUser.login)];
+		
 		// send of user message
-		chatService.send(chatService.getJID(receiver), message, 'chat');
-		showMessage(chatUser.login, new Date().toISOString(), message);
-		selector.val('');
+		chatService.send(opponentID, message, 'chat');
+		
+		showMessage(chatUser.login, message, new Date().toISOString());
+		elem.val('');
 	}
+}
+
+function showMessage(nick, message, time) {
+	var html, selector = $('.chat .messages');
+	
+	html = '<section class="message">';
+	html += '<header><b>' + nick + '</b>';
+	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
+	html += '<div class="message-description">' + chatService.parser(message) + '</div></section>';
+	
+	selector.append(html);
+	selector.find('.message:even').addClass('white');
+	selector.scrollTo('*:last', 0);
 }
 
 function logout() {
@@ -101,13 +121,14 @@ function onConnectFailed() {
 }
 
 function onConnectSuccess() {
-	var opponent = choseUser(chatUser.login);
+	var opponent = chooseOpponent(chatUser.login);
+	
 	$('#loginForm').modal('hide');
 	$('#wrap').show();
-	$('.chat .user-list').html('<li class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + opponent + '</li>');
+	$('.panel-title .opponent').text(opponent);
+	$('.chat .chat-user-list').html('<li class="list-group-item"><span class="glyphicon glyphicon-user"></span> ' + opponent + '</li>');
 	$('.chat .messages').empty();
 	$('.chat input:text').focus().val('');
-	$('.opponent').text(opponent);
 	changeHeightChatBlock();
 }
 
@@ -122,25 +143,11 @@ function onConnectClosed() {
 }
 
 function onChatMessage(nick, type, time, message) {
-	var userName;
-	
+	// choose the nick by QB user id
 	$(Object.keys(users)).each(function() {
 		if (users[this] == nick)
-			userName = this;
+			nick = this;
 	});
 	
-	showMessage(userName, time, message);
-}
-
-function showMessage(userName, time, message) {
-	var html, selector = $('.chat .messages');
-	
-	html = '<section class="message">';
-	html += '<header><b>' + userName + '</b>';
-	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
-	html += '<div class="message-description">' + chatService.parser(message) + '</div></section>';
-	
-	selector.append(html);
-	selector.find('.message:even').addClass('white');
-	selector.scrollTo('*:last', 0);
+	showMessage(nick, message, time);
 }

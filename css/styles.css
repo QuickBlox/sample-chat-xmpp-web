@@ -30,7 +30,7 @@ body {
 	}
 		#loginForm .modal-title img {
 			width: 18px;
-			margin-right: 6px;
+			margin-right: 7px;
 		}
 
 #loginForm button:first-child {
@@ -50,8 +50,8 @@ body {
 ----------------------------------------------------------*/
 #wrap {
 	display: none;
-	max-width: 880px;
-	min-width: 700px;
+	max-width: 850px;
+	min-width: 600px;
 	width: 95%;
 	height: 100%;
 	margin: 0 auto;
@@ -60,40 +60,29 @@ body {
 	#wrap .panel-heading {
 		position: relative;
 	}
-		#wrap .panel-heading .btn {
+		#wrap .panel-heading button {
 			position: absolute;
 			top: 0;
 			font-size: 18px;
+			color: #fff !important;
 			background: none;
+			outline: 0;
 		}
-		#wrap .panel-heading .btn:hover {
-			color: #fff;
+		#wrap .panel-heading button:hover {
 			opacity: 0.7;
-		}
-		#wrap .panel-heading #addRoom {
-			left: 0;
 		}
 		#wrap .panel-heading #logout {
 			right: 0;
+		}
+		#wrap .panel-heading #addRoom {
+			left: 0;
 		}
 	#wrap .panel-body {
 		padding: 0;
 	}
 
-/* Chat module
+/* Chat Module
 ----------------------------------------------------------*/
-/* Loading */
-.loading {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	width: 50px;
-	height: 50px;
-	margin: auto;
-}
-
 /* Chats */
 .chat-container {
 	overflow: hidden;
@@ -106,9 +95,8 @@ body {
 	.chat .chat-content {
 		overflow: hidden;
 		height: 100%;
+		padding: 0 2px;
 		background: #ececec;
-		border-left: 2px solid #ececec;
-		border-right: 2px solid #ececec;
 	}
 		.chat .messages {
 			overflow: auto;
@@ -120,7 +108,7 @@ body {
 
 /* Chats and Users Lists */
 .chat-list,
-.user-list {
+.chat-user-list {
 	width: 200px;
 	height: 100%;
 	overflow: auto;
@@ -128,7 +116,7 @@ body {
 .chat-list {
 	float: left;
 }
-.user-list {
+.chat-user-list {
 	float: right;
 }
 	.list-group-item {
@@ -165,4 +153,16 @@ body {
 	padding: 5px;
 	font-size: 13px;
 	opacity: 0;
+}
+
+/* Loading */
+.loading {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 50px;
+	height: 50px;
+	margin: auto;
 }

@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>QB Web Chat sample - One to One Chat</title>
+	<title>QB Web Chat sample - One to One chat</title>
 	
 	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-	<div id="wrap">
+	<section id="wrap">
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title">Private chat with <span class="opponent"></span></h3>
@@ -16,30 +16,24 @@
 					<span class="glyphicon glyphicon-log-out"></span>
 				</button>
 			</div>
-			
-			<div class="panel-body">
-				<div class="chat-container">
-					<div class="chat">
-						<ul class="user-list list-group"></ul>
-						<div class="chat-content">
-							<div class="messages"></div>
-							<form action="#" class="controls">
-								<div class="input-group">
-									 <input type="text" class="form-control" placeholder="Enter your message here..">
-									 <span class="input-group-btn">
-										 <button type="submit" class="sendMessage btn btn-primary">Send</button>
-									 </span>
-								</div>
-							</form>
+			<div class="chat panel-body">
+				<ul class="chat-user-list list-group"></ul>
+				<div class="chat-content">
+					<div class="messages"></div>
+					<form action="#" class="controls">
+						<div class="input-group">
+							 <input type="text" class="form-control" placeholder="Enter your message here..">
+							 <span class="input-group-btn">
+								 <button type="submit" class="sendMessage btn btn-primary">Send</button>
+							 </span>
 						</div>
-					</div>
+					</form>
 				</div>
-				
-			</div><!-- .panel-body -->
+			</div>
 		</div><!-- .panel -->
-	</div><!-- #wrap -->
+	</section><!-- #wrap -->
 	
-	<div id="loginForm" class="modal fade">
+	<section id="loginForm" class="modal fade">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -56,7 +50,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</section>
 	
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
 	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
