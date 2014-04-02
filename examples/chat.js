@@ -78,17 +78,17 @@ function connectChat() {
 
 function sendMessage(event) {
 	event.preventDefault();
-	var elem, message, opponentID;
+	var elem, message, recipientID;
 	
 	elem = $(this).parents('form').find('input:text');
 	message = elem.val();
 	
 	// check if the user did not leave the empty field
 	if (trim(message)) {
-		opponentID = users[chooseOpponent(chatUser.login)];
+		recipientID = users[chooseOpponent(chatUser.login)];
 		
 		// send of user message
-		chatService.send(opponentID, message, 'chat');
+		chatService.sendMessage(recipientID, message, 'chat');
 		
 		showMessage(chatUser.login, message, new Date().toISOString());
 		elem.val('');
@@ -142,10 +142,12 @@ function onConnectClosed() {
 	chatService = null;
 }
 
-function onChatMessage(nick, type, time, message) {
+function onChatMessage(senderID, type, time, message) {
+	var nick;
+	
 	// choose the nick by QB user id
 	$(Object.keys(users)).each(function() {
-		if (users[this] == nick)
+		if (users[this] == senderID)
 			nick = this;
 	});
 	
