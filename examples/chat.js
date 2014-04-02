@@ -1,4 +1,4 @@
-var params, chatUser, chatService;
+var params, chatUser = {}, chatService;
 
 // Storage QB user ids by their logins
 var users = {
@@ -50,7 +50,8 @@ function login() {
 			onConnectFailed();
 			console.log(err.detail);
 		} else {
-			chatUser = result;
+			chatUser.id = result.id;
+			chatUser.login = params.login;
 			chatUser.pass = params.password;
 			
 			connectChat();
@@ -61,7 +62,6 @@ function login() {
 function connectChat() {
 	// setting parameters of Chat object
 	params = {
-		// chat callbacks
 		onConnectFailed: onConnectFailed,
 		onConnectSuccess: onConnectSuccess,
 		onConnectClosed: onConnectClosed,
@@ -73,7 +73,7 @@ function connectChat() {
 	chatService = new QBChat(params);
 	
 	// connect to QB chat service
-	chatService.connect(chatUser.id, chatUser.pass);
+	chatService.connect(chatUser);
 }
 
 function sendMessage(event) {
@@ -138,8 +138,8 @@ function onConnectClosed() {
 	$('#loginForm .progress').hide();
 	$('#loginForm button').show();
 	
+	chatUser = {};
 	chatService = null;
-	chatUser = null;
 }
 
 function onChatMessage(nick, type, time, message) {
