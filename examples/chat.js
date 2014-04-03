@@ -130,6 +130,9 @@ function onConnectSuccess() {
 	$('.chat .messages').empty();
 	$('.chat input:text').focus().val('');
 	changeHeightChatBlock();
+	
+	// create a timer that will send presence each 60 seconds
+	chatService.startAutoSendPresence(60);
 }
 
 function onConnectClosed() {
