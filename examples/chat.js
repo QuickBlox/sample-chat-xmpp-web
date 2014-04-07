@@ -73,7 +73,7 @@ function connectChat() {
 		onChatMessage: onChatMessage,
 		onChatState: onChatState,
 
-		debug: true
+		debug: false
 	};
 	
 	chatService = new QBChat(params);
