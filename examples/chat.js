@@ -117,20 +117,39 @@ function stopTyping() {
 
 function sendMessage(event) {
 	event.preventDefault();
-	var elem, text, message;
+	var elem, text, message, file, fileUID;
 	
 	elem = $(this).parents('form').find('input:text');
 	text = elem.val();
 	
 	// check if user did not leave the empty field
 	if (trim(text)) {
+		file = $('input:file')[0].files[0];
+		
+		if (file) {
+			QB.content.createAndUpload({file: file, 'public': true}, function(err, result) {
+				if (err) {
+					console.log(err.detail);
+				} else {
+					console.log(result);
+					fileUID = result.uid;
+					makeMessage();
+				}
+			});
+		} else {
+			makeMessage();
+		}
+	}
+	
+	function makeMessage() {
 		stopTyping();
 		
 		message = {
 			body: text,
 			type: 'chat',
 			extension: {
-				nick: chatUser.login
+				nick: chatUser.login,
+				fileUID: fileUID || null
 			}
 		};
 		
@@ -199,7 +218,17 @@ function onConnectClosed() {
 }
 
 function onChatMessage(senderID, message) {
+	console.log(message);
 	showMessage(message.extension.nick, message.body, message.time);
+	if (message.extension && message.extension.fileUID) {
+		QB.content.getFile(message.extension.fileUID, function(err, result) {
+			if (err) {
+				console.log(err.detail);
+			} else {
+				console.log(result);
+			}
+		});
+	}
 }
 
 function onChatState(senderID, message) {

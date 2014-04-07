@@ -310,7 +310,7 @@ ContentProxy.prototype.getInfo = function (id, callback) {
 };
 
 ContentProxy.prototype.getFile = function (uid, callback) {
- this.service.ajax({url: contentIdUrl(id) + config.urls.type}, function (err, res) {
+ this.service.ajax({url: contentIdUrl(uid) + '.xml', dataType: 'xml'}, function (err, res) {
     if (err) { callback (err, null); }
     else { callback (null, res); }
   });
