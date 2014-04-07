@@ -31,4 +31,3 @@ function alertErrors(err) {
 function chooseSelector(id) {
 	return $('#chat-public').add('#chat-' + id);
 }
-

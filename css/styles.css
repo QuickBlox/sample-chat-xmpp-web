@@ -149,6 +149,13 @@ body {
 		word-wrap: break-word;
 	}
 
+.typing-message {
+	padding: 5px;
+	font-size: 13px;
+	color: #999;
+	background: #fff;
+}
+
 .service-message {
 	padding: 5px;
 	font-size: 13px;

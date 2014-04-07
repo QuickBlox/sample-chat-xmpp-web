@@ -1,4 +1,4 @@
-var params, chatUser = {}, chatService;
+var params, chatUser, chatService, recipientID;
 
 // Storage QB user ids by their logins
 var users = {
@@ -10,7 +10,7 @@ $(document).ready(function() {
 	// Web SDK initialization
 	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret);
 	
-	// creation of QuickBlox session
+	// QuickBlox session creation
 	QB.createSession(function(err, result) {
 		if (err) {
 			console.log(err.detail);
@@ -26,6 +26,7 @@ $(document).ready(function() {
 			// events
 			$('#loginForm button').click(login);
 			$('#logout').click(logout);
+			$('.chat input:text').keydown(startTyping);
 			$('.sendMessage').click(sendMessage);
 		}
 	});
@@ -44,15 +45,17 @@ function login() {
 		password: '123123123' // default password
 	};
 	
-	// authentication of chat user
+	// chat user authentication
 	QB.login(params, function(err, result) {
 		if (err) {
 			onConnectFailed();
 			console.log(err.detail);
 		} else {
-			chatUser.id = result.id;
-			chatUser.login = params.login;
-			chatUser.pass = params.password;
+			chatUser = {
+				id: result.id,
+				login: params.login,
+				pass: params.password
+			};
 			
 			connectChat();
 		}
@@ -60,13 +63,14 @@ function login() {
 }
 
 function connectChat() {
-	// setting parameters of Chat object
+	// set parameters of Chat object
 	params = {
 		onConnectFailed: onConnectFailed,
 		onConnectSuccess: onConnectSuccess,
 		onConnectClosed: onConnectClosed,
 		onChatMessage: onChatMessage,
-		
+		onChatState: onChatState,
+
 		debug: false
 	};
 	
@@ -76,21 +80,64 @@ function connectChat() {
 	chatService.connect(chatUser);
 }
 
+function startTyping() {
+	if (chatUser.isTyping) return true;
+	
+	var message = {
+		state: 'composing',
+		type: 'chat',
+		extension: {
+			nick: chatUser.login
+		}
+	};
+	
+	// send 'composing' as chat state notification
+	chatService.sendMessage(recipientID, message);
+	
+	chatUser.isTyping = true;
+	setTimeout(stopTyping, 5 * 1000);
+}
+
+function stopTyping() {
+	if (!chatUser.isTyping) return true;
+	
+	var message = {
+		state: 'paused',
+		type: 'chat',
+		extension: {
+			nick: chatUser.login
+		}
+	};
+	
+	// send 'paused' as chat state notification
+	chatService.sendMessage(recipientID, message);
+	
+	chatUser.isTyping = false;
+}
+
 function sendMessage(event) {
 	event.preventDefault();
-	var elem, message, recipientID;
+	var elem, text, message;
 	
 	elem = $(this).parents('form').find('input:text');
-	message = elem.val();
+	text = elem.val();
 	
-	// check if the user did not leave the empty field
-	if (trim(message)) {
-		recipientID = users[chooseOpponent(chatUser.login)];
+	// check if user did not leave the empty field
+	if (trim(text)) {
+		stopTyping();
 		
-		// send of user message
-		chatService.sendMessage(recipientID, message, 'chat');
+		message = {
+			body: text,
+			type: 'chat',
+			extension: {
+				nick: chatUser.login
+			}
+		};
 		
-		showMessage(chatUser.login, message, new Date().toISOString());
+		// send user message
+		chatService.sendMessage(recipientID, message);
+		
+		showMessage(chatUser.login, text, new Date().toISOString());
 		elem.val('');
 	}
 }
@@ -103,7 +150,11 @@ function showMessage(nick, message, time) {
 	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
 	html += '<div class="message-description">' + QBChatHelpers.parser(message) + '</div></section>';
 	
-	selector.append(html);
+	if ($('.typing-message')[0])
+		$('.typing-message').before(html);
+	else
+		selector.append(html);
+	
 	selector.find('.message:even').addClass('white');
 	selector.scrollTo('*:last', 0);
 }
@@ -131,6 +182,8 @@ function onConnectSuccess() {
 	$('.chat input:text').focus().val('');
 	changeHeightChatBlock();
 	
+	recipientID = users[opponent];
+	
 	// create a timer that will send presence each 60 seconds
 	chatService.startAutoSendPresence(60);
 }
@@ -141,18 +194,22 @@ function onConnectClosed() {
 	$('#loginForm .progress').hide();
 	$('#loginForm button').show();
 	
-	chatUser = {};
+	chatUser = null;
 	chatService = null;
 }
 
-function onChatMessage(senderID, type, time, message) {
-	var nick;
-	
-	// choose the nick by QB user id
-	$(Object.keys(users)).each(function() {
-		if (users[this] == senderID)
-			nick = this;
-	});
-	
-	showMessage(nick, message, time);
+function onChatMessage(senderID, message) {
+	showMessage(message.extension.nick, message.body, message.time);
+}
+
+function onChatState(senderID, message) {
+	switch (message.state) {
+	case 'composing':
+		$('.chat .messages').append('<div class="typing-message">' + message.extension.nick + ' ...</div>');
+		$('.chat .messages').scrollTo('*:last', 0);
+		break;
+	case 'paused':
+		QBChatHelpers.removeTypingMessage($('.typing-message'), message.extension.nick);
+		break;
+	}
 }
