@@ -1,8 +1,20 @@
 /* Helper Functions
 ----------------------------------------------------------*/
+function changeInputFileBehavior() {
+	$('input:file').change(function() {
+		var file = $(this).val();
+		$('.attach').show().html('<span class="file">' + file + '<button type="button" class="close">&times;</button></span>');
+	});
+}
+
 function updateTime() {
 	$('.message time').timeago().removeAttr('title');
 	setTimeout(updateTime, 60 * 1000);
+}
+
+function closeFile() {
+	$('.attach').hide();
+	$('input:file').val('');
 }
 
 function changeHeightChatBlock() {
@@ -26,8 +38,4 @@ function trim(str) {
 
 function alertErrors(err) {
 	alert(JSON.stringify($.parseJSON(err.detail).errors));
-}
-
-function chooseSelector(id) {
-	return $('#chat-public').add('#chat-' + id);
 }

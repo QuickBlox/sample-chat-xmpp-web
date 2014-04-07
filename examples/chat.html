@@ -12,7 +12,7 @@
 		<div class="panel panel-primary">
 			<div class="panel-heading">
 				<h3 class="panel-title">Private chat with <span class="opponent"></span></h3>
-				<button type="button" id="logout" class="btn" data-toggle="tooltip" data-placement="bottom" title="Exit">
+				<button type="button" id="logout" class="btn tooltip-title" data-toggle="tooltip" data-placement="bottom" title="Exit">
 					<span class="glyphicon glyphicon-log-out"></span>
 				</button>
 			</div>
@@ -22,16 +22,24 @@
 					<div class="messages"></div>
 					<form action="#" class="controls">
 						<div class="input-group">
-							 <input type="text" class="form-control" placeholder="Enter your message here..">
-							 <span class="input-group-btn">
-								 <button type="submit" class="sendMessage btn btn-primary">Send</button>
-							 </span>
+							<span class="uploader input-group-addon">
+								<span class="glyphicon glyphicon-file"></span>
+								<input type="file" class="tooltip-title" data-toggle="tooltip" data-placement="right" title="Attach file">
+								<div class="attach"></div>
+							</span>
+							<input type="text" class="form-control" placeholder="Enter your message here..">
+							<span class="input-group-btn">
+								<button type="submit" class="sendMessage btn btn-primary">Send</button>
+							</span>
+						</div>
+						<div class="file-loading bg-warning">
+							<img src="../images/file-loading.gif" alt="loading">
+							Please wait.. File is loading
 						</div>
 					</form>
 				</div>
 			</div>
 		</div><!-- .panel -->
-		<input type="file">
 	</section><!-- #wrap -->
 	
 	<section id="loginForm" class="modal fade">

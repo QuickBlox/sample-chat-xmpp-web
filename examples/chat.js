@@ -20,14 +20,16 @@ $(document).ready(function() {
 				keyboard: false
 			});
 			
-			$('.panel-heading button').tooltip();
+			$('.tooltip-title').tooltip();
+			changeInputFileBehavior();
 			updateTime();
 			
 			// events
 			$('#loginForm button').click(login);
 			$('#logout').click(logout);
+			$('.attach').on('click', '.close', closeFile);
 			$('.chat input:text').keydown(startTyping);
-			$('.sendMessage').click(sendMessage);
+			$('.sendMessage').click(makeMessage);
 		}
 	});
 	
@@ -71,7 +73,7 @@ function connectChat() {
 		onChatMessage: onChatMessage,
 		onChatState: onChatState,
 
-		debug: false
+		debug: true
 	};
 	
 	chatService = new QBChat(params);
@@ -115,59 +117,76 @@ function stopTyping() {
 	chatUser.isTyping = false;
 }
 
-function sendMessage(event) {
+function makeMessage(event) {
 	event.preventDefault();
-	var elem, text, message, file, fileUID;
+	var file, text;
 	
-	elem = $(this).parents('form').find('input:text');
-	text = elem.val();
+	file = $('input:file')[0].files[0];
+	text = $('.chat input:text').val();
 	
 	// check if user did not leave the empty field
 	if (trim(text)) {
-		file = $('input:file')[0].files[0];
 		
+		// check if user has uploaded file
 		if (file) {
+			$('.chat .input-group').hide();
+			$('.file-loading').show();
+			closeFile();
+			
 			QB.content.createAndUpload({file: file, 'public': true}, function(err, result) {
 				if (err) {
 					console.log(err.detail);
 				} else {
-					console.log(result);
-					fileUID = result.uid;
-					makeMessage();
+					$('.file-loading').hide();
+					$('.chat .input-group').show();
+					sendMessage(text, result.name, result.uid);
 				}
 			});
 		} else {
-			makeMessage();
+			sendMessage(text);
 		}
-	}
-	
-	function makeMessage() {
-		stopTyping();
-		
-		message = {
-			body: text,
-			type: 'chat',
-			extension: {
-				nick: chatUser.login,
-				fileUID: fileUID || null
-			}
-		};
-		
-		// send user message
-		chatService.sendMessage(recipientID, message);
-		
-		showMessage(chatUser.login, text, new Date().toISOString());
-		elem.val('');
 	}
 }
 
-function showMessage(nick, message, time) {
-	var html, selector = $('.chat .messages');
+function sendMessage(text, fileName, fileUID) {
+	stopTyping();
+	
+	var message = {
+		body: text,
+		type: 'chat',
+		extension: {
+			nick: chatUser.login
+		}
+	};
+	
+	if (fileName && fileUID) {
+		message.extension.fileName = fileName;
+		message.extension.fileUID = fileUID;
+	}
+	
+	// send user message
+	chatService.sendMessage(recipientID, message);
+	
+	showMessage(message.body, new Date().toISOString(), message.extension);
+	$('.chat input:text').val('');
+}
+
+function showMessage(body, time, extension) {
+	var html, url, selector = $('.chat .messages');
 	
 	html = '<section class="message">';
-	html += '<header><b>' + nick + '</b>';
+	html += '<header><b>' + extension.nick + '</b>';
 	html += '<time datetime="' + time + '">' + $.timeago(time) + '</time></header>';
-	html += '<div class="message-description">' + QBChatHelpers.parser(message) + '</div></section>';
+	html += '<div class="message-description">' + QBChatHelpers.parser(body) + '</div>';
+	
+	// get attached file
+	if (extension.fileName && extension.fileUID) {
+		url = QBChatHelpers.getLinkOnFile(extension.fileUID);
+		html += '<footer class="message-attach"><span class="glyphicon glyphicon-paperclip"></span> ';
+		html += '<a href="' + url + '" target="_blank">' + extension.fileName + '</a></footer>';
+	}
+	
+	html += '</section>';
 	
 	if ($('.typing-message')[0])
 		$('.typing-message').before(html);
@@ -218,17 +237,7 @@ function onConnectClosed() {
 }
 
 function onChatMessage(senderID, message) {
-	console.log(message);
-	showMessage(message.extension.nick, message.body, message.time);
-	if (message.extension && message.extension.fileUID) {
-		QB.content.getFile(message.extension.fileUID, function(err, result) {
-			if (err) {
-				console.log(err.detail);
-			} else {
-				console.log(result);
-			}
-		});
-	}
+	showMessage(message.body, message.time, message.extension);
 }
 
 function onChatState(senderID, message) {
