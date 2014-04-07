@@ -9,7 +9,8 @@
 var config = {
 	server: 'chat.quickblox.com',
 	muc: 'muc.chat.quickblox.com',
-	bosh: 'http://chat.quickblox.com:5280'
+	bosh: 'http://chat.quickblox.com:5280',
+	amazon: 'https://qbprod.s3.amazonaws.com/'
 };
 
 module.exports = config;
@@ -25,203 +26,235 @@ module.exports = config;
 // Browserify dependencies
 require('../libs/strophe');
 require('../libs/strophe.muc');
-require('../libs/strophe.chatstates');
 var config = require('./config');
+var QBChatHelpers = require('./qbChatHelpers');
 
 window.QBChat = QBChat;
+window.QBChatHelpers = QBChatHelpers;
+
+// add extra namespaces for Strophe
+Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 
 function QBChat(params) {
-	var _this = this;
+	var self = this;
 	
+	this.version = '0.6.4';
 	this.config = config;
 	
 	// create Strophe Connection object
-	this.connection = new Strophe.Connection(config.bosh);
+	this._connection = new Strophe.Connection(config.bosh);
 	
-	// set user callbacks
 	if (params) {
-		this.onConnectFailed = params.onConnectFailed || null;
-		this.onConnectSuccess = params.onConnectSuccess || null;
-		this.onConnectClosed = params.onConnectClosed || null;
-		this.onChatMessage = params.onChatMessage || null;
-		this.onMUCPresence = params.onMUCPresence || null;
-		this.onMUCRoster = params.onMUCRoster || null;
-		
-		// logs
 		if (params.debug) {
-			this.connection.rawInput = function(data) {console.log('RECV: ' + data)};
-			this.connection.rawOutput = function(data) {console.log('SENT: ' + data)};
+			this._connection.rawInput = function(data) {console.log('RECV: ' + data)};
+			this._connection.rawOutput = function(data) {console.log('SENT: ' + data)};
 		}
+		
+		// set user callbacks
+		this._callbacks = {
+			onConnectFailed: params.onConnectFailed || null,
+			onConnectSuccess: params.onConnectSuccess || null,
+			onConnectClosed: params.onConnectClosed || null,
+			onChatMessage: params.onChatMessage || null,
+			onChatState: params.onChatState || null,
+			onMUCPresence: params.onMUCPresence || null,
+			onMUCRoster: params.onMUCRoster || null
+		};
 	}
 	
-	this.onMessage = function(stanza, room) {
-		var senderJID, type, time, message, nick;
+	this._onMessage = function(stanza) {
+		var from, type, body, extraParams;
+		var senderID, message, extension = {};
+		
+		from = $(stanza).attr('from');
+		type = $(stanza).attr('type');
+		body = $(stanza).find('body')[0];
+		extraParams = $(stanza).find('extraParams')[0];
 		
 		if (params && params.debug) {
-			traceChat('Message');
 			console.log(stanza);
+			trace(body ? 'Message' : 'Chat state notification');
 		}
 		
-		senderJID = $(stanza).attr('from');
-		type = $(stanza).attr('type');
-		time = $(stanza).find('delay').attr('stamp') || new Date().toISOString();
-		message = $(stanza).find('body').context.textContent;
+		senderID = (type == 'groupchat') ? QBChatHelpers.getIDFromResource(from) : QBChatHelpers.getIDFromNode(from);
 		
-		if (type == 'groupchat')
-			nick = _this.getNickFromResource(senderJID);
-		else
-			nick = _this.getNickFromNode(senderJID);
-		
-		_this.onChatMessage(nick, type, time, message);
-		return true;
-	};
-	
-	this.onPresence = function(stanza, room) {
-		var jid, type, time, nick;
-		
-		if (params && params.debug) {
-			traceChat('Presence');
-			console.log(stanza);
-		}
-		
-		jid = $(stanza).attr('from');
-		type = $(stanza).attr('type');
-		time = new Date().toISOString();
-		
-		nick = _this.getNickFromResource(jid);
-		
-		_this.onMUCPresence(nick, type, time);
-		return true;
-	};
-	
-	this.onRoster = function(users, room) {
-		_this.onMUCRoster(users, room);
-		return true;
-	};
-	
-	// helpers
-	this.getJID = function(id) {
-		return id + "-" + QB.session.application_id + "@" + config.server;
-	};
-	
-	this.getNickFromNode = function(jid) {
-		return Strophe.getNodeFromJid(jid).split('-')[0];
-	};
-	
-	this.getNickFromResource = function(jid) {
-		return Strophe.getResourceFromJid(jid);
-	};
-	
-	this.parser = function(str) {
-		var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
-		str = escapeHTML(str);
-		
-		return str.replace(URL_REGEXP, function(match) {
-			url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
-			url_text = match;
-			return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
+		$(extraParams && extraParams.childNodes).each(function() {
+			extension[$(this).context.tagName] = $(this).context.textContent;
 		});
 		
-		function escapeHTML(s) {
-			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+		if (body) {
+			message = {
+				body: $(body).context.textContent,
+				time: $(stanza).find('delay').attr('stamp') || new Date().toISOString(),
+				type: type,
+				extension: extension
+			};
+		} else {
+			message = {
+				state: $(stanza).context.firstChild.tagName,
+				type: type,
+				extension: extension
+			};
 		}
+		
+		body ? self._callbacks.onChatMessage(senderID, message) : self._callbacks.onChatState(senderID, message);
+		return true;
+	};
+	
+	this._onPresence = function(stanza, room) {
+		var from, type, senderID, presence;
+		
+		from = $(stanza).attr('from');
+		type = $(stanza).attr('type');
+		
+		if (params && params.debug) {
+			console.log(stanza);
+			trace('Presence');
+		}
+		
+		senderID = QBChatHelpers.getIDFromResource(from);
+		
+		presence = {
+			time: new Date().toISOString(),
+			type: type
+		};
+		
+		self._callbacks.onMUCPresence(senderID, presence);
+		return true;
+	};
+	
+	this._onRoster = function(users, room) {
+		self._callbacks.onMUCRoster(users, room);
+		return true;
 	};
 }
 
-function traceChat(text) {
+function trace(text) {
 	console.log("[qb_chat]: " + text);
 }
 
 /* One to One chat methods
 ----------------------------------------------------------*/
-QBChat.prototype.connect = function(userID, userPass) {
-	var _this = this;
-	var userJID = this.getJID(userID);
+QBChat.prototype.startAutoSendPresence = function(timeout) {
+	var self = this;
+	setTimeout(sendPresence, timeout * 1000);
 	
-	this.connection.connect(userJID, userPass, function(status) {
+	function sendPresence() {
+		self._connection.send($pres());
+		self.startAutoSendPresence(timeout);
+	}
+};
+
+QBChat.prototype.connect = function(user) {
+	var self = this;
+	var userJID = QBChatHelpers.getJID(user.id);
+	
+	this._connection.connect(userJID, user.pass, function(status) {
 		switch (status) {
 		case Strophe.Status.ERROR:
-			traceChat('Error');
+			trace('Error');
 			break;
 		case Strophe.Status.CONNECTING:
-			traceChat('Connecting');
+			trace('Connecting');
 			break;
 		case Strophe.Status.CONNFAIL:
-			traceChat('Failed to connect');
-			_this.onConnectFailed();
+			trace('Failed to connect');
+			self._callbacks.onConnectFailed();
 			break;
 		case Strophe.Status.AUTHENTICATING:
-			traceChat('Authenticating');
+			trace('Authenticating');
 			break;
 		case Strophe.Status.AUTHFAIL:
-			traceChat('Unauthorized');
-			_this.onConnectFailed();
+			trace('Unauthorized');
+			self._callbacks.onConnectFailed();
 			break;
 		case Strophe.Status.CONNECTED:
-			traceChat('Connected');
-			_this.connection.addHandler(_this.onMessage, null, 'message', 'chat', null, null, null);
-			_this.onConnectSuccess();
+			trace('Connected');
+			self._connection.addHandler(self._onMessage, null, 'message', 'chat');
+			self._callbacks.onConnectSuccess();
 			break;
 		case Strophe.Status.DISCONNECTING:
-			traceChat('Disconnecting');
-			_this.onConnectClosed();
+			trace('Disconnecting');
+			self._callbacks.onConnectClosed();
 			break;
 		case Strophe.Status.DISCONNECTED:
-			traceChat('Disconnected');
+			trace('Disconnected');
 			break;
 		case Strophe.Status.ATTACHED:
-			traceChat('Attached');
+			trace('Attached');
 			break;
 		}
 	});
 };
 
-QBChat.prototype.send = function(userID, body, type) {
-	var params, msg;
-	var userJID = this.getJID(userID);
+QBChat.prototype.sendMessage = function(userID, message) {
+	var msg, userJID = QBChatHelpers.getJID(userID);
 	
-	params = {
+	msg = $msg({
 		to: userJID,
-		from: this.connection.jid,
-		type: type
-	};
+		type: message.type
+	});
 	
-	msg = $msg(params).c('body').t(body);
-	this.connection.send(msg);
+	if (message.body) {
+		msg.c('body', {
+			xmlns: Strophe.NS.CLIENT
+		}).t(message.body);
+	}
+	
+	// Chat State Notifications (XEP 0085)
+	// http://xmpp.org/extensions/xep-0085.html
+	if (message.state) {
+		msg.c(message.state, {
+			xmlns: Strophe.NS.CHATSTATES
+		});
+	}
+	
+	// custom parameters
+	if (message.extension) {
+		msg.up().c('extraParams', { xmlns: '' });
+		
+		$(Object.keys(message.extension)).each(function() {
+			msg.c(this).t(message.extension[this]).up();
+		});
+	}
+	
+	this._connection.send(msg);
 };
 
 QBChat.prototype.disconnect = function() {
-	this.connection.send($pres());
-	this.connection.flush();
-	this.connection.disconnect();
+	this._connection.send($pres());
+	this._connection.flush();
+	this._connection.disconnect();
 };
 
 /* MUC methods
 ----------------------------------------------------------*/
+// Multi-User Chat (XEP 0045)
+// http://xmpp.org/extensions/xep-0045.html
+
 QBChat.prototype.join = function(roomJid, nick) {
-	this.connection.muc.join(roomJid, nick, this.onMessage, this.onPresence, this.onRoster);
+	this._connection.muc.join(roomJid, nick, this._onMessage, this._onPresence, this._onRoster);
 };
 
 QBChat.prototype.leave = function(roomJid, nick) {
-	this.connection.muc.leave(roomJid, nick);
+	this._connection.muc.leave(roomJid, nick);
 };
 
 QBChat.prototype.createRoom = function(roomName, nick) {
-	var _this = this;
+	var self = this;
 	
 	this.newRoom = QB.session.application_id + '_' + roomName + '@' + config.muc;
-	this.connection.send(
+	this._connection.send(
 		$pres({
-			'from': this.connection.jid,
-			'to': this.newRoom + '/' + nick
+			to: this.newRoom + '/' + nick
 		}).c('x', {xmlns: Strophe.NS.MUC})
 	);
 	
 	setTimeout(function() {
-		_this.connection.muc.createInstantRoom(_this.newRoom,
+		self._connection.muc.createInstantRoom(self.newRoom,
 		                                       function() {
 		                                         console.log('Room created');
-	                                             _this.connection.muc.configure(_this.newRoom, configureSuccess, configureError);
+	                                             self._connection.muc.configure(self.newRoom, configureSuccess, configureError);
 		                                       },
 		                                       function() {
 		                                       	 console.log('Room created error');
@@ -232,7 +265,7 @@ QBChat.prototype.createRoom = function(roomName, nick) {
 		console.log('Room config set');
 		var param = $(config).find('field[var="muc#roomconfig_persistentroom"]');
 		param.find('value').text(1);
-		_this.connection.muc.saveConfiguration(_this.newRoom, [param[0]], saveSuccess, configureError);
+		self._connection.muc.saveConfiguration(self.newRoom, [param[0]], saveSuccess, configureError);
 	}
 	
 	function configureError(err) {
@@ -247,111 +280,79 @@ QBChat.prototype.createRoom = function(roomName, nick) {
 
 QBChat.prototype.invite = function(receiver) {
 	console.log('invite');
-	var userJID = this.getJID(receiver);
-	this.connection.muc.invite(this.newRoom, userJID);
+	var userJID = QBChatHelpers.getJID(receiver);
+	this._connection.muc.invite(this.newRoom, userJID);
 };
 
 QBChat.prototype.destroy = function(roomName) {
 	console.log('destroy');
 	var roomJid = QB.session.application_id + '_' + roomName + '@' + config.muc;
 	var iq = $iq({
-		'from': this.connection.jid,
-		'to': roomJid,
-		'type': 'set'
+		to: roomJid,
+		type: 'set'
 	}).c('query', {xmlns: Strophe.NS.MUC_OWNER})
 	  .c('destroy').c('reason').t('Sorry, this room was removed');
-	this.connection.send(iq);
+	this._connection.send(iq);
 };
 
-},{"../libs/strophe":4,"../libs/strophe.chatstates":3,"../libs/strophe.muc":5,"./config":1}],3:[function(require,module,exports){
-// Browserify exports start
-module.exports = (function() {
-
-/**
- * Chat state notifications (XEP 0085) plugin
- * @see http://xmpp.org/extensions/xep-0085.html
+},{"../libs/strophe":4,"../libs/strophe.muc":5,"./config":1,"./qbChatHelpers":3}],3:[function(require,module,exports){
+/* 
+ * QuickBlox JavaScript SDK / XMPP Chat plugin
+ *
+ * Chat helpers methods
+ *
  */
-Strophe.addConnectionPlugin('chatstates',
-{
-	init: function (connection)
-	{
-		this._connection = connection;
 
-		Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
+// Browserify dependencies
+require('../libs/strophe');
+var config = require('./config');
+
+var QBChatHelpers = {
+	getJID: function(id) {
+		return id + "-" + QB.session.application_id + "@" + config.server;
 	},
-
-	statusChanged: function (status)
-	{
-		if (status === Strophe.Status.CONNECTED
-			|| status === Strophe.Status.ATTACHED)
-		{
-			this._connection.addHandler(this._notificationReceived.bind(this),
-				Strophe.NS.CHATSTATES, "message");
+	
+	getIDFromNode: function(jid) {
+		return parseInt(Strophe.getNodeFromJid(jid).split('-')[0]);
+	},
+	
+	getIDFromResource: function(jid) {
+		var resource = Strophe.getResourceFromJid(jid);
+		return parseInt(resource) || resource;
+	},
+	
+	parser: function(str) {
+		var URL_REGEXP = /\b((?:https?:\/\/|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/gi;
+		str = escapeHTML(str);
+		
+		return str.replace(URL_REGEXP, function(match) {
+			url = (/^[a-z]+:/i).test(match) ? match : 'http://' + match;
+			url_text = match;
+			return '<a href="' + escapeHTML(url) + '" target="_blank">' + escapeHTML(url_text) + '</a>';
+		});
+		
+		function escapeHTML(s) {
+			return s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 		}
 	},
-
-	addActive: function(message)
-	{
-		return message.c('active', {xmlns: Strophe.NS.CHATSTATES}).up();
+	
+	addTypingMessage: function(obj, nick) {
+		obj.text(obj.text().split(' ...')[0].concat(', ').concat(nick).concat(' ...'));
 	},
-
-	_notificationReceived: function(message)
-	{
-		var composing = $(message).find('composing'),
-		paused = $(message).find('paused'),
-		active = $(message).find('active'),
-		jid = $(message).attr('from');
-
-		if (composing.length > 0)
-		{
-			$(document).trigger('composing.chatstates', jid);
-		}
-
-		if (paused.length > 0)
-		{
-			$(document).trigger('paused.chatstates', jid);
-		}
-
-		if (active.length > 0)
-		{
-			$(document).trigger('active.chatstates', jid);
-		}
-
-		return true;
+	
+	removeTypingMessage: function(obj, nick) {
+		obj.text(obj.text().replace(', ' + nick, '').replace(nick + ', ', '').replace(nick + ' ...', ''));
+		if (obj.text().length == 0) obj.remove();
 	},
-
-	sendActive: function(jid, type)
-	{
-		this._sendNotification(jid, type, 'active');
-	},
-
-	sendComposing: function(jid, type)
-	{
-		this._sendNotification(jid, type, 'composing');
-	},
-
-	sendPaused: function(jid, type)
-	{
-		this._sendNotification(jid, type, 'paused');
-	},
-
-	_sendNotification: function(jid, type, notification)
-	{
-		if (!type) type = 'chat';
-
-		this._connection.send($msg(
-		{
-			to: jid,
-			type: type
-		})
-		.c(notification, {xmlns: Strophe.NS.CHATSTATES}));
+	
+	getLinkOnFile: function(uid) {
+		return config.amazon + uid;
 	}
-});
+};
 
-// Browserify exports end
-})();
+module.exports = QBChatHelpers;
 
-},{}],4:[function(require,module,exports){
+},{"../libs/strophe":4,"./config":1}],4:[function(require,module,exports){
 // Browserify exports start
 module.exports = (function() {
 
