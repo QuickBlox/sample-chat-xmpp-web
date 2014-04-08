@@ -124,7 +124,7 @@ function sendMessage(event) {
 
 function logout() {
 	// leave the public room
-	chatService.leave(QBAPP.publicRoom, chatUser.login);
+	chatService.leave(QBAPP.publicRoom);
 	// close the connection
 	chatService.disconnect();
 }
