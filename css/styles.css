@@ -94,6 +94,7 @@ body {
 		background: #ececec;
 	}
 		.chat .messages {
+			position: relative;
 			overflow: auto;
 		}
 		.chat .controls {
