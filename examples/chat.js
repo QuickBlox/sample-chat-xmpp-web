@@ -2,7 +2,7 @@ var params, chatUser, chatService, recipientID;
 
 // Storage QB user ids by their logins
 var users = {
-	Quick: '978815',
+	Quick: '999190',
 	Blox: '978816'
 };
 

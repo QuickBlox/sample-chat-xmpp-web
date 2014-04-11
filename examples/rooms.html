@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>QB Web Chat sample - Room manager</title>
+	
+	<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+	<section id="wrap" class="wrap-rooms">
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title"></h3>
+				<button type="button" id="logout" class="btn tooltip-title" data-toggle="tooltip" data-placement="bottom" title="Exit">
+					<span class="glyphicon glyphicon-log-out"></span>
+				</button>
+			</div>
+			
+			<div class="panel-body">
+				<section class="col col-search">
+					<div class="col-content">
+						<h4>Search users</h4>
+						<div class="alert alert-warning">Please click on the button 'Search' to get an common list all available users from your QB account.</div>
+						<div class="well">
+							<ul class="list-group"></ul>
+						</div>
+					</div>
+					<div class="col-footer">
+						<button id="search" class="btn btn-primary">Search</button>
+					</div>
+				</section>
+				
+				<section class="col col-occupants">
+					<div class="col-content">
+						<h4>Room's occupants (<span class="occupant-count"></span>)</h4>
+						<div class="well">
+							<ul class="list-group"></ul>
+						</div>
+					</div>
+					<span class="overlay"></span>
+				</section>
+				
+				<div class="col col-controls">
+					<div class="buttons">
+						<button id="addUsers" class="btn btn-default btn-sm tooltip-title" data-toggle="tooltip" data-placement="bottom" title="Add users">
+							<span class="glyphicon glyphicon-arrow-right"></span>
+						</button>
+						<button id="deleteUsers" class="btn btn-default btn-sm tooltip-title" data-toggle="tooltip" data-placement="bottom" title="Delete users">
+							<span class="glyphicon glyphicon-arrow-left"></span>
+						</button>
+					</div>
+				</div>
+			</div><!-- .panel-body -->
+		</div><!-- .panel -->
+	</section><!-- #wrap -->
+	
+	<section id="loginForm" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3 class="modal-title">Room manager<br>
+						<a href="http://quickblox.com" target="_blank"><img src="../images/qb_logo.png" alt="quickblox logo">by QuickBlox</a>
+					</h3>
+				</div>
+				<div class="modal-body">
+					<form action="#">
+						<div class="form-group">
+							<input type="text" id="roomName" class="form-control" placeholder="Enter room name" autofocus>
+						</div>
+						<button type="submit" id="createRoom" class="btn btn-primary btn-block">Create new room</button>
+					</form>
+					
+					<div class="progress progress-striped active">
+						<div class="progress-bar"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+	<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	
+	<script src="../libs/quickblox.js"></script>
+	<script src="../libs/quickblox.chat.js"></script>
+	
+	<script src="../config.js"></script>
+	<script src="../js/helpers.js"></script>
+	
+	<script src="rooms.js"></script>
+</body>
+</html>

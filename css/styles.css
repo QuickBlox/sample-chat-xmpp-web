@@ -55,7 +55,11 @@ body {
 	width: 95%;
 	height: 100%;
 	margin: 0 auto;
-	padding: 20px 0 30px;
+	padding: 30px 0;
+}
+#wrap.wrap-rooms {
+	max-width: 600px;
+	min-width: 450px;
 }
 	#wrap .panel-heading {
 		position: relative;
@@ -63,6 +67,7 @@ body {
 		#wrap .panel-heading button {
 			position: absolute;
 			top: 0;
+			right: 0;
 			font-size: 18px;
 			color: #fff !important;
 			background: none;
@@ -71,12 +76,6 @@ body {
 		#wrap .panel-heading button:hover {
 			opacity: 0.7;
 		}
-		#wrap .panel-heading #logout {
-			right: 0;
-		}
-		#wrap .panel-heading #addRoom {
-			left: 0;
-		}
 	#wrap .panel-body {
 		padding: 0;
 	}
@@ -84,23 +83,20 @@ body {
 /* Chat Module
 ----------------------------------------------------------*/
 /* Chats */
-.chat {
+.chat .chat-content {
+	overflow: hidden;
 	height: 100%;
+	padding: 0 2px;
+	background: #ececec;
 }
-	.chat .chat-content {
-		overflow: hidden;
-		height: 100%;
-		padding: 0 2px;
-		background: #ececec;
+	.chat .messages {
+		position: relative;
+		overflow: auto;
 	}
-		.chat .messages {
-			position: relative;
-			overflow: auto;
-		}
-		.chat .controls {
-			height: 42px;
-			padding: 4px 2px;
-		}
+	.chat .controls {
+		height: 42px;
+		padding: 4px 2px;
+	}
 
 /* Users List */
 .chat-user-list {
@@ -221,3 +217,73 @@ body {
 				color: #000;
 				opacity: 0.5;
 			}
+			
+/* Room manager
+----------------------------------------------------------*/
+.col {
+	position: relative;
+	width: 46%;
+	height: 100%;
+}
+.col-search {
+	float: left;
+}
+.col-occupants {
+	float: right;
+}
+	.col-content {
+		padding: 10px 10px 0;
+	}
+	.col-footer {
+		height: 55px;
+		padding: 10px 0;
+		text-align: center;
+	}
+.col-controls {
+	overflow: hidden;
+	width: 8%;
+	background: #ececec;
+}
+	.col-controls .buttons {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width: 34px;
+		height: 70px;
+		margin: auto;
+	}
+		.col-controls .buttons button:first-child {
+			margin-bottom: 10px;
+		}
+
+.well {
+	margin-bottom: 0;
+}
+.col-search .well {
+	display: none;
+}
+	.well .list-group {
+		height: 100%;
+		margin-bottom: 0;
+		overflow: auto;
+		background: #fff;
+	}
+
+.checkbox {
+	margin-top: 0;
+}
+	.checkbox input[type=checkbox] {
+		margin-right: 10px;
+		margin-left: 0;
+	}
+
+.overlay {
+	position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+}
