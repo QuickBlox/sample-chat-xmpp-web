@@ -38,7 +38,7 @@ Strophe.addNamespace('CHATSTATES', 'http://jabber.org/protocol/chatstates');
 function QBChat(params) {
 	var self = this;
 	
-	this.version = '0.8.0';
+	this.version = '0.8.1';
 	this.config = config;
 	
 	this._autoPresence = true;
@@ -4993,8 +4993,8 @@ Strophe.Bosh.prototype = {
                     }
                 }
                 
-                /* This is a chrome CORS fix,
-                 * Chrome changes the request method from POST to
+                /* This is a webkit CORS fix,
+                 * Safari and old Chrome changes the request method from POST to
                  * OPTIONS thus not carriying the initial xml stanza.
                  * this keeps the http request pending for random time
                  * period before restarting it.
