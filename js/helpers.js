@@ -23,7 +23,7 @@ function changeHeightChatBlock() {
 	var outerHeightWell = 79;
 	$('.panel-body').height(window.innerHeight - outerHeightWrapHeader);
 	$('.messages, .col-content').height(window.innerHeight - outerHeightWrapHeader - outerHeightControls);
-	$('.well').height(window.innerHeight - outerHeightWrapHeader - outerHeightControls - outerHeightWell);
+	$('.users').height(window.innerHeight - outerHeightWrapHeader - outerHeightControls - outerHeightWell);
 }
 
 function chooseOpponent(currentLogin) {

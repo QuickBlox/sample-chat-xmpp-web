@@ -176,6 +176,10 @@ body {
 		width: 23px;
 		height: 23px;
 	}
+.search-loading {
+	width: 40px;
+	height: 40px;
+}
 
 /* Attach file */
 .uploader {
@@ -222,7 +226,7 @@ body {
 ----------------------------------------------------------*/
 .col {
 	position: relative;
-	width: 46%;
+	width: 45%;
 	height: 100%;
 }
 .col-search {
@@ -241,7 +245,7 @@ body {
 	}
 .col-controls {
 	overflow: hidden;
-	width: 8%;
+	width: 10%;
 	background: #ececec;
 }
 	.col-controls .buttons {
@@ -258,18 +262,22 @@ body {
 			margin-bottom: 10px;
 		}
 
-.well {
-	margin-bottom: 0;
+.users {
+	padding: 10px;
 }
-.col-search .well {
+.col-search .users {
 	display: none;
 }
-	.well .list-group {
+	.users .list-group {
 		height: 100%;
 		margin-bottom: 0;
 		overflow: auto;
 		background: #fff;
 	}
+
+.col-occupants .alert {
+	display: none;	
+}
 
 .checkbox {
 	margin-top: 0;
